@@ -1,9 +1,19 @@
-function getTextContent() {
-    return document.getElementById("src").value;
+const getTextContent = () => document.getElementById("src").value;
+const setResultHTML = html => document.getElementById("dest").innerHTML = html;
+
+function writeResult(sb, title, content) {
+    sb.writeTag("div", sb => {
+        sb.writeTag("b", title);
+        sb.write(": ");
+        sb.writeTag("code", content);
+    });
 }
 
-function setResultHTML(html) {
-    document.getElementById("dest").innerHTML = html;
+function writeDetails(sb, title, content) {
+    sb.writeTag("details", sb => {
+        sb.writeTag(["summary", "b"], title);
+        sb.writeTag(["code"], content);
+    });
 }
 
 function getCounts() {
@@ -11,21 +21,25 @@ function getCounts() {
     const words = Sob.stringToWords(text);
     const chars = Sob.stringToChars(text);
     const bytes = Sob.stringToUTF8(text);
-    let sb = "";
-    sb += "<p>"
-    sb += `<b>#words</b>: <code>${words.length}</code><br>`
-    sb += `<b>#characters</b>: <code>${chars.length}</code><br>`
-    sb += `<b>#bytes</b>: <code>${bytes.length}</code>`
-    sb += "</p>"
-    sb += "<details><summary>expand word list</summary><pre><code style=\"text-wrap : wrap\">"
-    sb += "[" + Sob.showList(words, x => `"${Sob.sanitiseEscapes(x)}"`) + "]";
-    sb += "</code></pre></details>"
-    sb += "<details><summary>expand character list</summary><pre><code style=\"text-wrap : wrap\">"
-    sb += "[" + Sob.showList(chars, x => `'${Sob.sanitiseEscapes(x)}'`) + "]";
-    sb += "</code></pre></details>"
-    sb += "<details><summary>expand byte list</summary><pre><code style=\"text-wrap : wrap\">"
-    sb += "[" + Sob.showList(bytes) + "]";
-    sb += "</code></pre></details>"
+    let sb = new Sob.HTMLBuilder;
+    sb.writeTag("p", sb => {
+        writeResult(sb, "#words", words.length);
+        writeResult(sb, "#characters", chars.length);
+        writeResult(sb, "#bytes", bytes.length);
+    });
+    writeDetails(sb, "expand word list",
+        "[" + Sob.showList(words, x => `"${Sob.sanitiseEscapes(x)}"`) + "]"
+    );
+    writeDetails(sb, "expand character list",
+        "[" + Sob.showList(chars, x => `'${Sob.sanitiseEscapes(x)}'`) + "]"
+    );
+    writeDetails(sb, "expand byte list",
+        "[" + Sob.showList(bytes) + "]"
+    );
     setResultHTML(sb);
     console.log("got counts");
+}
+
+function getStats() {
+
 }
