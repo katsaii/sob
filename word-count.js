@@ -41,5 +41,19 @@ function getCounts() {
 }
 
 function getStats() {
-
+    const text = getTextContent();
+    const wordFreq = Sob.statFrequencies(Sob.stringToWords(text));
+    const charFreq = Sob.statFrequencies(Sob.stringToChars(text));
+    const byteFreq = Sob.statFrequencies(Sob.stringToUTF8(text));
+    let sb = new Sob.HTMLBuilder;
+    writeDetails(sb, "expand word frequencies",
+        "[" + Sob.showList(wordFreq) + "]"
+    );
+    writeDetails(sb, "expand char frequencies",
+        "[" + Sob.showList(charFreq) + "]"
+    );
+    writeDetails(sb, "expand byte frequencies",
+        "[" + Sob.showList(byteFreq) + "]"
+    );
+    setResultHTML(sb);
 }
