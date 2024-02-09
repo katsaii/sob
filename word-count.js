@@ -4,15 +4,17 @@ const setResultHTML = html => document.getElementById("dest").innerHTML = html;
 function writeResult(sb, title, content) {
     sb.writeTag("div", sb => {
         sb.writeTag("b", title);
-        sb.write(": ");
+        sb.write(" → ");
         sb.writeTag("code", content);
     });
 }
 
-function writeDetails(sb, title, content) {
-    sb.writeTag("details", sb => {
-        sb.writeTag(["summary", "b"], title);
-        sb.writeTag(["code"], content);
+function writeResultRichText(sb, title, content) {
+    sb.writeTag("div", sb => {
+        sb.writeTag("b", title);
+        sb.write(" ⤵");
+        sb.writeVoidTag("br");
+        sb.writeTag("textarea cols=\"80\" rows=\"5\"", content);
     });
 }
 
@@ -27,13 +29,15 @@ function getCounts() {
         writeResult(sb, "#characters", chars.length);
         writeResult(sb, "#bytes", bytes.length);
     });
-    writeDetails(sb, "expand word list",
+    writeResultRichText(sb, "word list",
         "[" + Sob.showList(words, x => `"${Sob.sanitiseEscapes(x)}"`) + "]"
     );
-    writeDetails(sb, "expand character list",
+    sb.writeVoidTag("br");
+    writeResultRichText(sb, "character list",
         "[" + Sob.showList(chars, x => `'${Sob.sanitiseEscapes(x)}'`) + "]"
     );
-    writeDetails(sb, "expand byte list",
+    sb.writeVoidTag("br");
+    writeResultRichText(sb, "byte list",
         "[" + Sob.showList(bytes) + "]"
     );
     setResultHTML(sb);
@@ -46,14 +50,20 @@ function getStats() {
     const charFreq = Sob.statFrequencies(Sob.stringToChars(text));
     const byteFreq = Sob.statFrequencies(Sob.stringToUTF8(text));
     let sb = new Sob.HTMLBuilder;
-    writeDetails(sb, "expand word frequencies",
-        "[" + Sob.showList(wordFreq) + "]"
+    writeResultRichText(sb, "word frequencies",
+        "[" + Sob.showList(wordFreq, ([x, freq]) => {
+            return `["${Sob.sanitiseEscapes(x)}", ${freq}]`;
+        }) + "]"
     );
-    writeDetails(sb, "expand char frequencies",
-        "[" + Sob.showList(charFreq) + "]"
+    sb.writeVoidTag("br");
+    writeResultRichText(sb, "char frequencies",
+        "[" + Sob.showList(charFreq, ([x, freq]) => {
+            return `['${Sob.sanitiseEscapes(x)}', ${freq}]`;
+        }) + "]"
     );
-    writeDetails(sb, "expand byte frequencies",
-        "[" + Sob.showList(byteFreq) + "]"
+    sb.writeVoidTag("br");
+    writeResultRichText(sb, "byte frequencies",
+        "[" + Sob.showList(byteFreq, ([x, freq]) => `[${x}, ${freq}]`) + "]"
     );
     setResultHTML(sb);
 }

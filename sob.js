@@ -86,7 +86,8 @@ Sob.HTMLBuilder = class {
             }
         }
         for (const tag of tagsClose) {
-            this.text += `</${tag}>`;
+            const tagWithoutAttrs = tag.split()[0];
+            this.text += `</${tagWithoutAttrs}>`;
         }
     }
 
@@ -105,3 +106,4 @@ Sob.statFrequencies = (xs) => {
     }
     return Array.from(db).sort((lhs, rhs) => rhs[1] - lhs[1]);
 };
+
