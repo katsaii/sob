@@ -97,6 +97,23 @@ Sob.HTMLBuilder = class {
             this.text += `<${tag} />`;
         }
     }
+
+    writeResult(title, content) {
+        this.writeTag("div", sb => {
+            sb.writeTag("b", title);
+            sb.write(" → ");
+            sb.writeTag("code", content);
+        });
+    }
+
+    writeResultRichText(title, content) {
+        this.writeTag("div", sb => {
+            sb.writeTag("b", title);
+            sb.write(" ⤵");
+            sb.writeVoidTag("br");
+            sb.writeTag("textarea cols=\"80\" rows=\"5\"", content);
+        });
+    }
 };
 
 Sob.statFrequencies = (xs) => {
@@ -216,8 +233,8 @@ Sob.MORSE_SPACE_WORD = "0000000";
 Sob.MORSE_SPACE_LETTER = "000";
 
 Sob.morseExplode = (morse) => morse
-        .split(MORSE_SPACE_WORD)
-        .map(morseWord => morseWord.split(MORSE_SPACE_LETTER));
+        .split(Sob.MORSE_SPACE_WORD)
+        .map(morseWord => morseWord.split(Sob.MORSE_SPACE_LETTER));
 
 Sob.morseExplodeDitDah = (morse) => morse
         .split("/")
@@ -227,8 +244,8 @@ Sob.morseExplodeDitDah = (morse) => morse
         });
 
 Sob.morseImplode = (morse) => morse
-        .map(morseWord => morseWord.join(MORSE_SPACE_LETTER))
-        .join(MORSE_SPACE_WORD);
+        .map(morseWord => morseWord.join(Sob.MORSE_SPACE_LETTER))
+        .join(Sob.MORSE_SPACE_WORD);
 
 Sob.morseImplodeDitDah = (morse) => morse
         .map(morseWord => morseWord.map(Sob.morseLetterBin2DitDah).join(" "))
