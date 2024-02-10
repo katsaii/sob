@@ -1,6 +1,6 @@
 const Sob = { };
 
-Sob.stringToWords = (str) => str.split(/\b\s+/);
+Sob.stringToWords = (str) => str.trim().split(/\s+/);
 
 Sob.stringToChars = (str) => Array.from(str);
 
@@ -109,7 +109,11 @@ Sob.statFrequencies = (xs) => {
 
 Sob.reverseInnerElements = (xs) => xs.map(x => x.reverse());
 
-Sob.morseSignalsInternational = [
+// 1     -> .
+// 111   -> -
+// 10111 -> .-
+
+Sob.morseCharsInternational = [
     ["A", ".-"],   ["B", "-..."], ["C", "-.-."],
     ["D", "-.."],  ["E", "."],    ["F", "..-."],
     ["G", "--."],  ["H", "...."], ["I", ".."],
@@ -121,11 +125,22 @@ Sob.morseSignalsInternational = [
     ["Y", "-.--"], ["Z", "--.."],
 ];
 
-Sob.morseSignalsNonLatin = [
-
+Sob.morseCharsNonLatin = [
+    ["À", ".--.-"],   ["Ä", ".-.-"],  ["Å", ".--.-"],
+    ["Ą", ".-.-"],    ["Æ", ".-.-"],  ["Ć", "-.-.."],
+    ["Ĉ", "-.-.."],   ["Ç", "-.-.."], ["CH", "----"],
+    ["Đ", "..-.."],   // đ
+    ["Ð", "..--."],   // ð
+    ["É", "..-.."],   ["È", ".-..-"], ["Ę", "..-.."],
+    ["Ĝ", "--.-."],   ["Ĥ", "----"],  ["Ĵ", ".---."],
+    ["Ł", ".-..-"],   ["Ń", "--.--"], ["Ñ", "--.--"],
+    ["Ó", "---."],    ["Ö", "---."],  ["Ø", "---."],
+    ["Ś", "...-..."], ["Ŝ", "...-."], ["Š", "----"],
+    ["Þ", ".--.."],   ["Ü", "..--"],  ["Ŭ", "..--"],
+    ["Ź", "--..-."],  ["Ź", "--..-"],
 ];
 
-Sob.morseSignalsNumbers = [
+Sob.morseCharsNumbers = [
     ["1", ".----"], ["2", "..---"],
     ["3", "...--"], ["4", "....-"],
     ["5", "....."], ["6", "-...."],
@@ -133,7 +148,7 @@ Sob.morseSignalsNumbers = [
     ["9", "----."], ["0", "-----"],
 ];
 
-Sob.morseSignalsPunctuation = [
+Sob.morseCharsPunctuation = [
     [".", ".-.-.-"], [",", "--..--"], ["?", "..--.."],
     ["'", ".----."], ["/", "-..-."],  ["(", "-.--."],
     [")", "-.--.-"], [":", "---..."], ["=", "-...-"],
@@ -141,26 +156,57 @@ Sob.morseSignalsPunctuation = [
     ["@", ".--.-."],
 ];
 
-Sob.morseSignalsNonStandard = [
+Sob.morseCharsNonStandard = [
     ["!", "-.-.--"], ["&", ".-..."], [";", "-.-.-."],
     ["_", "..--.-"], ["$", "...-..-"]
 ];
 
-Sob.createMorseEncoder = (...alphabets) => {
+Sob.morseLetterBin2DitDah = (binLetter) => {
+    let letter = "";
+    for (const chunk of binLetter.split("0")) {
+        if (chunk == "1") {
+            letter += ".";
+        } else if (chunk == "111") {
+            letter += "-";
+        } else if (chunk == "?") {
+            letter += "?";
+        } else {
+            // special case, should never happen
+            letter += chunk.length;
+        }
+    }
+    return letter;
+};
+
+Sob.morseLetterDitDah2Bin = (letter) => Sob.stringToChars(letter)
+        .map(x => {
+            if (x == ".") {
+                return "1";
+            } else if (x == "-") {
+                return "111";
+            } else if (x == "?") {
+                return "?";
+            } else {
+                return "1".repeat(x);
+            }
+        })
+        .join("0");
+
+Sob.createMorseEncoder = (...charSets) => {
     let db = new Map;
-    for (const alphabet of alphabets) {
+    for (const alphabet of charSets) {
         for (const [letter, signal] of alphabet) {
-            db.set(letter.toUpperCase(), signal);
+            db.set(letter.toUpperCase(), Sob.morseLetterDitDah2Bin(signal));
         }
     }
     return db;
 };
 
-Sob.createMorseDecoder = (...alphabets) => {
+Sob.createMorseDecoder = (...charSets) => {
     let db = new Map;
-    for (const alphabet of alphabets) {
+    for (const alphabet of charSets) {
         for (const [letter, signal] of alphabet) {
-            db.set(signal, letter.toUpperCase());
+            db.set(Sob.morseLetterDitDah2Bin(signal), letter.toUpperCase());
         }
     }
     return db;
@@ -171,38 +217,45 @@ Sob.MORSE_SPACE_LETTER = "000";
 
 Sob.morseExplode = (morse) => morse
         .split(MORSE_SPACE_WORD)
-        .map(word => word.split(MORSE_SPACE_LETTER));
+        .map(morseWord => morseWord.split(MORSE_SPACE_LETTER));
 
-Sob.morseImplode = (morseWords) => morseWords
-        .map(word => word.join(MORSE_SPACE_LETTER))
+Sob.morseExplodeDitDah = (morse) => morse
+        .split("/")
+        .map(morseWord => {
+            let morseLetters = Sob.stringToWords(morseWord);
+            return morseLetters.map(Sob.morseLetterDitDah2Bin);
+        });
+
+Sob.morseImplode = (morse) => morse
+        .map(morseWord => morseWord.join(MORSE_SPACE_LETTER))
         .join(MORSE_SPACE_WORD);
 
-Sob.morseImplodeDitDah = (morseWords) => {
-    return morseWords.map(word => word.map(letter => {
-        let ditdah = "";
-        for (const chunk of letter.split("0")) {
-            if (chunk == "1") {
-                ditdah += ".";
-            } else if (chunk == "111") {
-                ditdah += "-";
-            } else {
-                // special case, should never happen
-                ditdah += chunk.length;
-            }
-        }
-    }).join(" ")).join(" / ");
-};
+Sob.morseImplodeDitDah = (morse) => morse
+        .map(morseWord => morseWord.map(Sob.morseLetterBin2DitDah).join(" "))
+        .join(" / ");
 
 Sob.morseEncode = (encoder, text) => {
-    let morseWords = [];
-    for (const word of Sob.stringToWords(text)) {
+    let morse = [];
+    for (const word of Sob.stringToWords(text.toUpperCase())) {
         let morseWord = [];
         for (const letter of Sob.stringToChars(word)) {
-            const morseLetter = encoder.get(letter);
-            if (morseLetter) {
-                morseWord.push(morseLetter);
-            }
+            const morseLetter = encoder.get(letter) ?? "?";
+            morseWord.push(morseLetter);
         }
-        morseWords.push(morseWord);
+        morse.push(morseWord);
     }
+    return morse;
+};
+
+Sob.morseDecode = (decoder, morse) => {
+    let words = [];
+    for (const morseWord of morse) {
+        let word = "";
+        for (const morseLetter of morseWord) {
+            const letter = decoder.get(morseLetter) ?? "?";
+            word += letter;
+        }
+        words.push(word);
+    }
+    return words.join(" ");
 };

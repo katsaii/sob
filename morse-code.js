@@ -3,83 +3,41 @@ const setTextContent = (value) => document.getElementById("dest").value = value;
 const getSelection = () => document.getElementById("lang-select").value;
 const getOption = (id) => document.getElementById(`check-${id}`).checked;
 
-const morseInternational = [
-    ["A", ".-"],   ["B", "-..."], ["C", "-.-."],
-    ["D", "-.."],  ["E", "."],    ["F", "..-."],
-    ["G", "--."],  ["H", "...."], ["I", ".."],
-    ["J", ".---"], ["K", "-.-"],  ["L", ".-.."],
-    ["M", "--"],   ["N", "-."],   ["O", "---"],
-    ["P", ".--."], ["Q", "--.-"], ["R", ".-."],
-    ["S", "..."],  ["T", "-"],    ["U", "..-"],
-    ["V", "...-"], ["W", ".--"],  ["X", "-..-"],
-    ["Y", "-.--"], ["Z", "--.."],
-];
-
-const morseNonLatin = [
-
-];
-
-const morseNumbers = [
-    ["1", ".----"], ["2", "..---"],
-    ["3", "...--"], ["4", "....-"],
-    ["5", "....."], ["6", "-...."],
-    ["7", "--..."], ["8", "---.."],
-    ["9", "----."], ["0", "-----"],
-];
-
-const morsePunctuation = [
-    [".", ".-.-.-"], [",", "--..--"], ["?", "..--.."],
-    ["'", ".----."], ["/", "-..-."],  ["(", "-.--."],
-    [")", "-.--.-"], [":", "---..."], ["=", "-...-"],
-    ["+", ".-.-."],  ["-", "-....-"], ["\"", ".-..-."],
-    ["@", ".--.-."],
-];
-
-const morseNonStandard = [
-    ["!", "-.-.--"], ["&", ".-..."], [";", "-.-.-."],
-    ["_", "..--.-"], ["$", "...-..-"]
-];
-
-const getDatabase = () => {
-    let db = [];
+const getCharSets = () => {
+    let charSets = [];
     switch (getSelection()) {
     case "international-non-latin":
-        db.push(...morseNonLatin);
+        charSets.push(Sob.morseCharsNonLatin);
     case "international":
-        db.push(...morseInternational);
+        charSets.push(Sob.morseCharsInternational);
         break;
     }
     if (getOption("numbers")) {
-        db.push(...morseNumbers);
+        charSets.push(Sob.morseCharsNumbers);
     }
     if (getOption("punctuation")) {
-        db.push(...morsePunctuation);
+        charSets.push(Sob.morseCharsPunctuation);
     }
     if (getOption("non-standard")) {
-        db.push(...morseNonStandard);
+        charSets.push(Sob.morseCharsNonStandard);
     }
-    return db;
+    return charSets;
 }
 
 function encodeMorse() {
     const text = getTextContent();
-    const words = Sob.stringToWords(text);
-    const db = new Map(getDatabase());
-    let morseWords = [];
-    for (const word of words) {
-        let morseChars = [];
-        const chars = Sob.stringToChars(word);
-        for (const char of chars) {
-            const code = db.get(char.toUpperCase()) ?? "?";
-            morseChars.push(code);
-        }
-        if (morseChars.length > 0) {
-            morseWords.push(morseChars.join(" "));
-        }
-    }
-    setTextContent(morseWords.join(" / "));
+    const encoder = Sob.createMorseEncoder(...getCharSets());
+    const morse = Sob.morseEncode(encoder, text);
+    const morseDitDah = Sob.morseImplodeDitDah(morse);
+    console.log(morseDitDah);
+    setTextContent(morseDitDah);
 }
 
 function decodeMorse() {
-
+    const morseDitDah = getTextContent();
+    const decoder = Sob.createMorseDecoder(...getCharSets());
+    const morse = Sob.morseExplodeDitDah(morseDitDah);
+    const text = Sob.morseDecode(decoder, morse);
+    console.log(text);
+    setTextContent(text);
 }
