@@ -4,12 +4,18 @@
 <a href="./index.html">&lt;&lt; back</a>
 <p>paste text in the box below and then click one of the buttons</p>
 <textarea id="src" cols="80" rows="10" placeholder="input text here"></textarea>
+<ul>
+  <li><code>a <b>dit</b> (.) has a signal length of 1, a <b>dah</b> has a signal length of 3</code></li>
+  <li><code>abnormal signal lengths are written directly as a plain hexadecimal digit</code></li>
+  <li><code>typically all non-word, non-letter pauses last a single bit, but in some cases a signal length of 0 indicates an extended pause</code></li>
+</ul>
 <hr>
 <label for="lang-select">choose a morse code encoding type:</label>
 <select id="lang-select">
-  <option value="international">international</option>
-  <option value="international-non-latin">international + non-latin extensions</option>
-  <option value="american">american</option>
+  <option value="international">international (ITU)</option>
+  <option value="international-non-latin">international (ITU) + non-latin extensions</option>
+  <option value="american">american (Morse)</option>
+  <option value="continental">continental (Gerke)</option>
 </select>
 <br>
 <input type="checkbox" id="check-numbers" checked />

@@ -16,10 +16,15 @@ const getCharSets = () => {
     case "american":
         charSets.push(Sob.morseCharsAmerican);
         break;
+    case "continental":
+        charSets.push(Sob.morseCharsContinental);
+        break;
     }
     if (getOption("numbers")) {
         if (lang == "american") {
             charSets.push(Sob.morseCharsNumbersAmerican);
+        } else if (lang == "continental") {
+            charSets.push(Sob.morseCharsNumbersContinental);
         } else {
             charSets.push(Sob.morseCharsNumbers);
         }
