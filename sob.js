@@ -1,6 +1,6 @@
 const Sob = { };
 
-Sob.stringToWords = (str) => str.match(/\b(\w+)\b/g);
+Sob.stringToWords = (str) => str.split(/\b\s+/);
 
 Sob.stringToChars = (str) => Array.from(str);
 
@@ -107,3 +107,4 @@ Sob.statFrequencies = (xs) => {
     return Array.from(db).sort((lhs, rhs) => rhs[1] - lhs[1]);
 };
 
+Sob.reverseInnerElements = (xs) => xs.map(x => x.reverse());

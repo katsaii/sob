@@ -3,12 +3,28 @@
 <script src="./morse-code.js"></script>
 <a href="./index.html">&lt;&lt; back</a>
 <p>paste text in the box below and then click one of the buttons</p>
-<textarea id="src" cols="80" rows="10" placeholder="hello world"></textarea>
+<textarea id="src" cols="80" rows="10" placeholder="input text here"></textarea>
 <hr>
-<button onclick="getCounts()">count</button>
-<button onclick="getStats()">statistics</button>
+<label for="lang-select">choose a morse code encoding type:</label>
+<select id="lang-select">
+  <option value="international">international</option>
+  <option value="international-non-latin">international + non-latin extensions</option>
+  <option value="american">american</option>
+</select>
+<br>
+<input type="checkbox" id="check-numbers" checked />
+<label for="check-punctuation">numbers</label>
+<br>
+<input type="checkbox" id="check-punctuation" checked />
+<label for="check-punctuation">punctuation</label>
+<br>
+<input type="checkbox" id="check-non-standard" />
+<label for="check-non-standard">non-standard</label>
 <hr>
-<div id="dest"></div>
+<button onclick="encodeMorse()">encode morse code</button>
+<button onclick="decodeMorse()">decode morse code</button>
+<hr>
+<textarea id="dest" cols="80" rows="5"></textarea>
 <h3>See Also</h3>
 <a href="https://www.britannica.com/topic/Morse-Code">britannica.com/topic/Morse-Code</a>
 <br>

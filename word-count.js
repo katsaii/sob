@@ -22,12 +22,18 @@ function getCounts() {
     const text = getTextContent();
     const words = Sob.stringToWords(text);
     const chars = Sob.stringToChars(text);
-    const bytes = Sob.stringToUTF8(text);
+    const utf8s = Sob.stringToUTF8(text);
+    const utf16s = Sob.stringToUTF16(text);
     let sb = new Sob.HTMLBuilder;
     sb.writeTag("p", sb => {
+        console.log(words)
+        console.log(chars)
+        console.log(utf8s)
+        console.log(utf16s)
         writeResult(sb, "#words", words.length);
         writeResult(sb, "#characters", chars.length);
-        writeResult(sb, "#bytes", bytes.length);
+        writeResult(sb, "#UTF-8 codepoints", utf8s.length);
+        writeResult(sb, "#UTF-16 codepoints", utf16s.length);
     });
     writeResultRichText(sb, "word list",
         "[" + Sob.showList(words, x => `"${Sob.sanitiseEscapes(x)}"`) + "]"
@@ -37,8 +43,12 @@ function getCounts() {
         "[" + Sob.showList(chars, x => `'${Sob.sanitiseEscapes(x)}'`) + "]"
     );
     sb.writeVoidTag("br");
-    writeResultRichText(sb, "byte list",
-        "[" + Sob.showList(bytes) + "]"
+    writeResultRichText(sb, "UTF-8 list",
+        "[" + Sob.showList(utf8s) + "]"
+    );
+    sb.writeVoidTag("br");
+    writeResultRichText(sb, "UTF-16 list",
+        "[" + Sob.showList(utf16s) + "]"
     );
     setResultHTML(sb);
     console.log("got counts");
@@ -48,7 +58,8 @@ function getStats() {
     const text = getTextContent();
     const wordFreq = Sob.statFrequencies(Sob.stringToWords(text));
     const charFreq = Sob.statFrequencies(Sob.stringToChars(text));
-    const byteFreq = Sob.statFrequencies(Sob.stringToUTF8(text));
+    const utf8Freq = Sob.statFrequencies(Sob.stringToUTF8(text));
+    const utf16Freq = Sob.statFrequencies(Sob.stringToUTF16(text));
     let sb = new Sob.HTMLBuilder;
     writeResultRichText(sb, "word frequencies",
         "[" + Sob.showList(wordFreq, ([x, freq]) => {
@@ -62,8 +73,12 @@ function getStats() {
         }) + "]"
     );
     sb.writeVoidTag("br");
-    writeResultRichText(sb, "byte frequencies",
-        "[" + Sob.showList(byteFreq, ([x, freq]) => `[${x}, ${freq}]`) + "]"
+    writeResultRichText(sb, "UTF-8 frequencies",
+        "[" + Sob.showList(utf8Freq, ([x, freq]) => `[${x}, ${freq}]`) + "]"
+    );
+    sb.writeVoidTag("br");
+    writeResultRichText(sb, "UTF-16 frequencies",
+        "[" + Sob.showList(utf16Freq, ([x, freq]) => `[${x}, ${freq}]`) + "]"
     );
     setResultHTML(sb);
 }
