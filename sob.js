@@ -247,6 +247,7 @@ Sob.morseLetterDitDah2Bin = (letter) => Sob.stringToChars(letter)
             } else if (letterDigit == "?") {
                 return "?";
             } else {
+                console.log(letterDigit);
                 return "1".repeat(Sob.base36Digits.findIndex(x => x == letterDigit));
             }
         })
@@ -280,7 +281,7 @@ Sob.morseExplode = (morse) => morse
         .map(morseWord => morseWord.split(Sob.MORSE_SPACE_LETTER));
 
 Sob.morseExplodeDitDah = (morse) => morse
-        .split("/")
+        .split(/[/_]/)
         .map(morseWord => {
             let morseLetters = Sob.stringToWords(morseWord);
             return morseLetters.map(Sob.morseLetterDitDah2Bin);
