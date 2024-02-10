@@ -126,10 +126,6 @@ Sob.statFrequencies = (xs) => {
 
 Sob.reverseInnerElements = (xs) => xs.map(x => x.reverse());
 
-// 1     -> .
-// 111   -> -
-// 10111 -> .-
-
 Sob.morseCharsInternational = [
     ["A", ".-"],   ["B", "-..."], ["C", "-.-."],
     ["D", "-.."],  ["E", "."],    ["F", "..-."],
@@ -140,6 +136,18 @@ Sob.morseCharsInternational = [
     ["S", "..."],  ["T", "-"],    ["U", "..-"],
     ["V", "...-"], ["W", ".--"],  ["X", "-..-"],
     ["Y", "-.--"], ["Z", "--.."],
+];
+
+Sob.morseCharsAmerican = [
+    ["A", ".2"],   ["B", "2..."], ["C", "..0."],
+    ["D", "2.."],  ["E", "."],    ["F", ".2."],
+    ["G", "22."],  ["H", "...."], ["I", ".."],
+    ["J", "2.2."], ["K", "2.2"],  ["L", "4"],
+    ["M", "22"],   ["N", "2."],   ["O", ".0."],
+    ["P", "....."], ["Q", "..2."], ["R", ".0.."],
+    ["S", "..."],  ["T", "2"],    ["U", "..2"],
+    ["V", "...2"], ["W", ".22"],  ["X", ".2.."],
+    ["Y", "..0.."], ["Z", "...0"],
 ];
 
 Sob.morseCharsNonLatin = [
@@ -165,6 +173,14 @@ Sob.morseCharsNumbers = [
     ["9", "----."], ["0", "-----"],
 ];
 
+Sob.morseCharsNumbersAmerican = [
+    ["1", ".22."], ["2", "..2.."],
+    ["3", "...2."], ["4", "....2"],
+    ["5", "222"], ["6", "......"],
+    ["7", "22.."], ["8", "2...."],
+    ["9", "2..2"], ["0", "B"],
+];
+
 Sob.morseCharsPunctuation = [
     [".", ".-.-.-"], [",", "--..--"], ["?", "..--.."],
     ["'", ".----."], ["/", "-..-."],  ["(", "-.--."],
@@ -178,6 +194,12 @@ Sob.morseCharsNonStandard = [
     ["_", "..--.-"], ["$", "...-..-"]
 ];
 
+Sob.base36Digits = [
+    "0", "1", "2", "3", "4", "5", "6", "7", "8", "9",
+    "A", "B", "C", "D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "O",
+    "P", "Q", "R", "S", "T", "U", "V", "W", "X", "Y", "Z"
+];
+
 Sob.morseLetterBin2DitDah = (binLetter) => {
     let letter = "";
     for (const chunk of binLetter.split("0")) {
@@ -188,23 +210,23 @@ Sob.morseLetterBin2DitDah = (binLetter) => {
         } else if (chunk == "?") {
             letter += "?";
         } else {
-            // special case, should never happen
-            letter += chunk.length;
+            // special case for abnormal signal lengths
+            letter += Sob.base36Digits[chunk.length];
         }
     }
     return letter;
 };
 
 Sob.morseLetterDitDah2Bin = (letter) => Sob.stringToChars(letter)
-        .map(x => {
-            if (x == ".") {
+        .map(letterDigit => {
+            if (letterDigit == ".") {
                 return "1";
-            } else if (x == "-") {
+            } else if (letterDigit == "-") {
                 return "111";
-            } else if (x == "?") {
+            } else if (letterDigit == "?") {
                 return "?";
             } else {
-                return "1".repeat(x);
+                return "1".repeat(Sob.base36Digits.findIndex(x => x == letterDigit));
             }
         })
         .join("0");

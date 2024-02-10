@@ -6,15 +6,23 @@ const getOption = (id) => document.getElementById(`check-${id}`).checked;
 
 const getCharSets = () => {
     let charSets = [];
-    switch (getSelection()) {
+    const lang = getSelection();
+    switch (lang) {
     case "international-non-latin":
         charSets.push(Sob.morseCharsNonLatin);
     case "international":
         charSets.push(Sob.morseCharsInternational);
         break;
+    case "american":
+        charSets.push(Sob.morseCharsAmerican);
+        break;
     }
     if (getOption("numbers")) {
-        charSets.push(Sob.morseCharsNumbers);
+        if (lang == "american") {
+            charSets.push(Sob.morseCharsNumbersAmerican);
+        } else {
+            charSets.push(Sob.morseCharsNumbers);
+        }
     }
     if (getOption("punctuation")) {
         charSets.push(Sob.morseCharsPunctuation);
