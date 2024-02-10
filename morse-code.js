@@ -39,21 +39,21 @@ const getCharSets = () => {
 }
 
 function writeMorseCodeData(morse, decoder) {
-    var binMorse = Sob.morseImplode(morse);
+    var morseBin = Sob.morseImplode(morse);
     let sb = new Sob.HTMLBuilder;
     sb.writeVoidTag("br");
-    sb.writeResultRichText("morse code binary signal", binMorse);
+    sb.writeResultRichText("morse code binary signal", morseBin);
     sb.writeTag(["pre style=\"overflow-x : scroll\"", "code"], sb => {
         let rulerN = 0;
         let ruler = "";
-        for (let i = binMorse.length - 1; i >= 0; i -= 1) {
+        for (let i = morseBin.length - 1; i >= 0; i -= 1) {
             ruler += rulerN;
             rulerN += 1;
         }
         sb.write(ruler);
         sb.writeVoidTag("br");
         sb.writeVoidTag("br");
-        sb.write(binMorse.replaceAll("1", "▓").replaceAll("0", "˽"));
+        sb.write(morseBin.replaceAll("1", "▓").replaceAll("0", "˽"));
         sb.writeVoidTag("br");
         sb.write(morse.map(morseWord => morseWord.map(morseLetter => {
             const letter = decoder.get(morseLetter) ?? "?";
@@ -81,6 +81,16 @@ function decodeMorse() {
     const morseDitDah = getTextContent();
     const decoder = Sob.createMorseDecoder(...getCharSets());
     const morse = Sob.morseExplodeDitDah(morseDitDah);
+    const text = Sob.morseDecode(decoder, morse);
+    console.log(text);
+    setTextContent(text);
+    writeMorseCodeData(morse, decoder);
+}
+
+function decodeMorseBinary() {
+    const morseBin = getTextContent();
+    const decoder = Sob.createMorseDecoder(...getCharSets());
+    const morse = Sob.morseExplode(morseBin);
     const text = Sob.morseDecode(decoder, morse);
     console.log(text);
     setTextContent(text);
