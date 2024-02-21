@@ -54,7 +54,7 @@ const SobHTMLBuilder = class {
     }
 
     writeAudio(url, type = "audio/wav") {
-        this.writeTag("audio controls controlslist=\"nodownload noplaybackrate\"", (sb) => {
+        this.writeTag("audio controls controlslist=\"noplaybackrate\"", (sb) => {
             sb.writeVoidTag(`source src="${url}" type="${type}"`);
         });
     }
