@@ -84,7 +84,7 @@ function writeMorseCodeAudio(sb, morse) {
             chanBuff[i] = samp;
         }
     }
-    const url = window.URL.createObjectURL(convertAudioBufferToBlob(audioBuff));
+    const url = window.URL.createObjectURL(sobAudioBufferToBlob(audioBuff));
     sb.writeAudio(url, "audio/wav");
 }
 

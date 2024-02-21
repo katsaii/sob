@@ -2,11 +2,11 @@
 // TODO :: understand and re-engineer this code to suit the purposes of Sob
 
 // Returns Uint8Array of WAV bytes
-function getWavBytes(buffer, options) {
+function sobAudioGetWavBytes(buffer, options) {
     const type = options.isFloat ? Float32Array : Uint16Array
     const numFrames = buffer.byteLength / type.BYTES_PER_ELEMENT
 
-    const headerBytes = getWavHeader(Object.assign({}, options, { numFrames }))
+    const headerBytes = sobAudioGetWavHeader(Object.assign({}, options, { numFrames }))
     const wavBytes = new Uint8Array(headerBytes.length + buffer.byteLength);
 
     // prepend header, then add pcmBytes
@@ -18,7 +18,7 @@ function getWavBytes(buffer, options) {
 
 // adapted from https://gist.github.com/also/900023
 // returns Uint8Array of WAV header bytes
-function getWavHeader(options) {
+function sobAudioGetWavHeader(options) {
     const numFrames =      options.numFrames
     const numChannels =    options.numChannels || 2
     const sampleRate =     options.sampleRate || 44100
@@ -68,7 +68,7 @@ function getWavHeader(options) {
     return new Uint8Array(buffer)
 }
 
-function convertAudioBufferToBlob(audioBuffer) {
+function sobAudioBufferToBlob(audioBuffer) {
 
     var channelData = [],
         totalLength = 0,
@@ -96,7 +96,7 @@ function convertAudioBufferToBlob(audioBuffer) {
     }
 
     // get WAV file bytes and audio params of your audio source
-    const wavBytes = this.getWavBytes(interleaved.buffer, {
+    const wavBytes = this.sobAudioGetWavBytes(interleaved.buffer, {
         isFloat: true, // floating point or 16-bit integer
         numChannels: audioBuffer.numberOfChannels,
         sampleRate: 48000,
