@@ -9,40 +9,40 @@ const getCharSets = () => {
     const lang = getSelection();
     switch (lang) {
     case "international-non-latin":
-        charSets.push(Sob.morseCharsNonLatin);
+        charSets.push(sobMorseCharsNonLatin);
     case "international":
-        charSets.push(Sob.morseCharsInternational);
+        charSets.push(sobMorseCharsInternational);
         break;
     case "american":
-        charSets.push(Sob.morseCharsAmerican);
+        charSets.push(sobMorseCharsAmerican);
         break;
     case "continental":
-        charSets.push(Sob.morseCharsContinental);
+        charSets.push(sobMorseCharsContinental);
         break;
     }
     if (getOption("numbers")) {
         if (lang == "american") {
-            charSets.push(Sob.morseCharsNumbersAmerican);
+            charSets.push(sobMorseCharsNumbersAmerican);
         } else if (lang == "continental") {
-            charSets.push(Sob.morseCharsNumbersContinental);
+            charSets.push(sobMorseCharsNumbersContinental);
         } else {
-            charSets.push(Sob.morseCharsNumbers);
+            charSets.push(sobMorseCharsNumbers);
         }
     }
     if (getOption("punctuation")) {
-        charSets.push(Sob.morseCharsPunctuation);
+        charSets.push(sobMorseCharsPunctuation);
     }
     if (getOption("non-standard")) {
-        charSets.push(Sob.morseCharsNonStandard);
+        charSets.push(sobMorseCharsNonStandard);
     }
     return charSets;
 }
 
 function writeMorseCodeData(sb, morse, decoder) {
-    var morseBin = Sob.morseImplode(morse);
+    var morseBin = sobMorseImplode(morse);
     sb.writeVoidTag("br");
     sb.writeResultRichText("morse code binary signal", morseBin);
-    sb.writeTag(["pre style=\"overflow-x : scroll\"", "code"], sb => {
+    sb.writeTag(["pre style=\"overflow-x : scroll\"", "code"], (sb) => {
         let rulerN = 0;
         let ruler = "";
         for (let i = morseBin.length - 1; i >= 0; i -= 1) {
@@ -59,12 +59,12 @@ function writeMorseCodeData(sb, morse, decoder) {
             const lhsCount = Math.floor(morseLetter.length / 2);
             const rhsCount = Math.max(0, morseLetter.length - lhsCount - 1);
             return "-".repeat(lhsCount) + letter + "-".repeat(rhsCount);
-        }).join(" ".repeat(Sob.MORSE_SPACE_LETTER.length))).join(" ".repeat(Sob.MORSE_SPACE_WORD.length)))
+        }).join(" ".repeat(SOB_MORSE_SPACE_LETTER.length))).join(" ".repeat(SOB_MORSE_SPACE_WORD.length)))
     });
 }
 
 function writeMorseCodeAudio(sb, morse) {
-    const morseBin = Sob.morseImplode(morse);
+    const morseBin = sobMorseImplode(morse);
     const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
     const ditLength = 0.1;
     const audioBuff = audioCtx.createBuffer(
@@ -91,13 +91,13 @@ function writeMorseCodeAudio(sb, morse) {
 function encodeMorse() {
     const text = getTextContent();
     const charSets = getCharSets();
-    const encoder = Sob.createMorseEncoder(...charSets);
-    const decoder = Sob.createMorseDecoder(...charSets);
-    const morse = Sob.morseEncode(encoder, text);
-    const morseDitDah = Sob.morseImplodeDitDah(morse);
+    const encoder = sobMorseEncoderCreate(...charSets);
+    const decoder = sobMorseDecoderCreate(...charSets);
+    const morse = sobMorseEncode(encoder, text);
+    const morseDitDah = sobMorseImplodeDitDah(morse);
     console.log(morseDitDah);
     setTextContent(morseDitDah);
-    let sb = new Sob.HTMLBuilder;
+    let sb = new SobHTMLBuilder;
     writeMorseCodeData(sb, morse, decoder);
     writeMorseCodeAudio(sb, morse);
     setResultHTML(sb);
@@ -105,12 +105,12 @@ function encodeMorse() {
 
 function decodeMorse() {
     const morseDitDah = getTextContent();
-    const decoder = Sob.createMorseDecoder(...getCharSets());
-    const morse = Sob.morseExplodeDitDah(morseDitDah);
-    const text = Sob.morseDecode(decoder, morse);
+    const decoder = sobMorseDecoderCreate(...getCharSets());
+    const morse = sobMorseExplodeDitDah(morseDitDah);
+    const text = sobMorseDecode(decoder, morse);
     console.log(text);
     setTextContent(text);
-    let sb = new Sob.HTMLBuilder;
+    let sb = new SobHTMLBuilder;
     writeMorseCodeData(sb, morse, decoder);
     writeMorseCodeAudio(sb, morse);
     setResultHTML(sb);
@@ -118,12 +118,12 @@ function decodeMorse() {
 
 function decodeMorseBinary() {
     const morseBin = getTextContent();
-    const decoder = Sob.createMorseDecoder(...getCharSets());
-    const morse = Sob.morseExplode(morseBin);
-    const text = Sob.morseDecode(decoder, morse);
+    const decoder = sobMorseDecoderCreate(...getCharSets());
+    const morse = sobMorseExplode(morseBin);
+    const text = sobMorseDecode(decoder, morse);
     console.log(text);
     setTextContent(text);
-    let sb = new Sob.HTMLBuilder;
+    let sb = new SobHTMLBuilder;
     writeMorseCodeData(sb, morse, decoder);
     writeMorseCodeAudio(sb, morse);
     setResultHTML(sb);
