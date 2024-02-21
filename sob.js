@@ -114,6 +114,12 @@ Sob.HTMLBuilder = class {
             sb.writeTag("textarea cols=\"80\" rows=\"5\"", content);
         });
     }
+
+    writeAudio(url, type = "audio/wav") {
+        this.writeTag("audio controls controlslist=\"nodownload noplaybackrate\"", sb => {
+            sb.writeVoidTag(`source src="${url}" type="${type}"`);
+        });
+    }
 };
 
 Sob.statFrequencies = (xs) => {

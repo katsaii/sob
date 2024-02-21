@@ -38,16 +38,15 @@ const getCharSets = () => {
     return charSets;
 }
 
-function writeMorseCodeData(morse, decoder) {
+function writeMorseCodeData(sb, morse, decoder) {
     var morseBin = Sob.morseImplode(morse);
-    let sb = new Sob.HTMLBuilder;
     sb.writeVoidTag("br");
     sb.writeResultRichText("morse code binary signal", morseBin);
     sb.writeTag(["pre style=\"overflow-x : scroll\"", "code"], sb => {
         let rulerN = 0;
         let ruler = "";
         for (let i = morseBin.length - 1; i >= 0; i -= 1) {
-            ruler += rulerN;
+            ruler += rulerN % 10;
             rulerN += 1;
         }
         sb.write(ruler);
@@ -62,7 +61,31 @@ function writeMorseCodeData(morse, decoder) {
             return "-".repeat(lhsCount) + letter + "-".repeat(rhsCount);
         }).join(" ".repeat(Sob.MORSE_SPACE_LETTER.length))).join(" ".repeat(Sob.MORSE_SPACE_WORD.length)))
     });
-    setResultHTML(sb);
+}
+
+function writeMorseCodeAudio(sb, morse) {
+    const morseBin = Sob.morseImplode(morse);
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const ditLength = 0.1;
+    const audioBuff = audioCtx.createBuffer(
+        1,
+        audioCtx.sampleRate * ditLength * morseBin.length,
+        audioCtx.sampleRate
+    );
+    const hz = 100;
+    let samp = 0;
+    for (let chan = 0; chan < audioBuff.numberOfChannels; chan += 1) {
+        const chanBuff = audioBuff.getChannelData(chan);
+        for (let i = 0; i < audioBuff.length; i++) {
+            const morseIdx = Math.floor(i / audioBuff.length * morseBin.length);
+            if (morseBin[morseIdx] == "1") {
+                samp = Math.sin(i * Math.PI * 2 / hz);
+            }
+            chanBuff[i] = samp;
+        }
+    }
+    const url = window.URL.createObjectURL(convertAudioBufferToBlob(audioBuff));
+    sb.writeAudio(url, "audio/wav");
 }
 
 function encodeMorse() {
@@ -74,7 +97,10 @@ function encodeMorse() {
     const morseDitDah = Sob.morseImplodeDitDah(morse);
     console.log(morseDitDah);
     setTextContent(morseDitDah);
-    writeMorseCodeData(morse, decoder);
+    let sb = new Sob.HTMLBuilder;
+    writeMorseCodeData(sb, morse, decoder);
+    writeMorseCodeAudio(sb, morse);
+    setResultHTML(sb);
 }
 
 function decodeMorse() {
@@ -84,7 +110,10 @@ function decodeMorse() {
     const text = Sob.morseDecode(decoder, morse);
     console.log(text);
     setTextContent(text);
-    writeMorseCodeData(morse, decoder);
+    let sb = new Sob.HTMLBuilder;
+    writeMorseCodeData(sb, morse, decoder);
+    writeMorseCodeAudio(sb, morse);
+    setResultHTML(sb);
 }
 
 function decodeMorseBinary() {
@@ -94,5 +123,8 @@ function decodeMorseBinary() {
     const text = Sob.morseDecode(decoder, morse);
     console.log(text);
     setTextContent(text);
-    writeMorseCodeData(morse, decoder);
+    let sb = new Sob.HTMLBuilder;
+    writeMorseCodeData(sb, morse, decoder);
+    writeMorseCodeAudio(sb, morse);
+    setResultHTML(sb);
 }
