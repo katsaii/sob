@@ -1,7 +1,7 @@
 const getTextContent = () => document.getElementById("src").value;
 const setResultHTML = (html) => document.getElementById("dest").innerHTML = html;
 
-function getCounts() {
+const getCounts = () => {
     const text = getTextContent();
     const words = sobStringToWords(text);
     const chars = sobStringToChars(text);
@@ -37,7 +37,7 @@ function getCounts() {
     console.log("got counts");
 }
 
-function getStats() {
+const getStats = () => {
     const text = getTextContent();
     const wordFreq = sobStatFrequencies(sobStringToWords(text));
     const charFreq = sobStatFrequencies(sobStringToChars(text));
