@@ -1,5 +1,34 @@
 const SOB_BITFONT_CELL_SIZE = 16;
 
+const sobBitFontCreateGlyph = (char, lines) => ({
+    char, lines, charCode : char.charCodeAt(0)
+});
+
+const SOB_BITFONT_WHITESPACE_MASK_MAX = 0b1111_1111_1111_1111;
+const SOB_BITFONT_WHITESPACE_MASK = [
+    0b0000_0000_0000_0000,
+    0b0000_0000_1000_0000,
+    0b0000_0001_1000_0000,
+    0b0000_0001_1100_0000,
+    0b0000_0011_1100_0000,
+    0b0000_0011_1110_0000,
+    0b0000_0111_1110_0000,
+    0b0000_0111_1111_0000,
+    0b0000_1111_1111_0000,
+    0b0000_1111_1111_1000,
+    0b0001_1111_1111_1000,
+    0b0001_1111_1111_1100,
+    0b0011_1111_1111_1100,
+    0b0011_1111_1111_1110,
+    0b0111_1111_1111_1110,
+    0b0111_1111_1111_1111
+];
+
+const sobBitFontCreateGlyphWhitespace = (width) => {
+    let space = SOB_BITFONT_WHITESPACE_MASK[width] ?? SOB_BITFONT_WHITESPACE_MASK_MAX;
+    return sobBitFontCreateGlyph(" ", Array(SOB_BITFONT_CELL_SIZE).fill(space));
+};
+
 const sobBitfontFromJSON = (json) => {
     let font = [];
     for (const charCode in json) {
@@ -8,7 +37,7 @@ const sobBitfontFromJSON = (json) => {
         }
         const char = String.fromCharCode(charCode);
         const lines = json[charCode];
-        font.push({ charCode, char, lines });
+        font.push({ char, lines, charCode : Number(charCode) });
     }
     return font;
 };
@@ -16,7 +45,6 @@ const sobBitfontFromJSON = (json) => {
 const sobBitfontGetAtlasSize = (font, glyphsPerRow) => {
     const width = glyphsPerRow * SOB_BITFONT_CELL_SIZE;
     const height = Math.ceil(font.length / glyphsPerRow) * SOB_BITFONT_CELL_SIZE;
-    console.log({ width, height, glyphsPerRow, len : font.length, SOB_BITFONT_CELL_SIZE });
     return [
         Math.max(width, SOB_BITFONT_CELL_SIZE),
         Math.max(height, SOB_BITFONT_CELL_SIZE)
@@ -70,15 +98,17 @@ const sobBitfontDrawToCanvas = (iDest, font, imageData, glyphsPerRow = undefined
     }
 };
 
-const sobBitfontAlphabet = (font, sep = "") => font.map(({ char }) => char).join(sep);
+const sobBitfontGlyphGetChar = ({ char }) => char;
 
-const sobBitfontAlphabetWrapped = (font, glyphsPerRow, sep = "", sepWrap = "\n") => {
-    let alpha = "";
+const sobBitfontWrapped = (font, glyphsPerRow) => {
+    let rows = [[]];
+    let currentRow = rows[0];
     for (const iGlyph in font) {
-        if (iGlyph != 0) {
-            alpha += iGlyph % glyphsPerRow == 0 ? sepWrap : sep;
+        if (iGlyph != 0 && iGlyph % glyphsPerRow == 0) {
+            currentRow = [];
+            rows.push(currentRow);
         }
-        alpha += font[iGlyph].char;
+        currentRow.push(font[iGlyph]);
     }
-    return alpha;
+    return rows;
 };

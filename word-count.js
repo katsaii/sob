@@ -8,16 +8,16 @@ const getCounts = () => {
     const utf8s = sobStringToUTF8(text);
     const utf16s = sobStringToUTF16(text);
     let sb = new SobHTMLBuilder;
-    sb.writeTag("p", (sb) => {
-        console.log(words)
-        console.log(chars)
-        console.log(utf8s)
-        console.log(utf16s)
-        sb.writeResult("#words", words.length);
-        sb.writeResult("#characters", chars.length);
-        sb.writeResult("#UTF-8 codepoints", utf8s.length);
-        sb.writeResult("#UTF-16 codepoints", utf16s.length);
-    });
+
+    console.log(words)
+    console.log(chars)
+    console.log(utf8s)
+    console.log(utf16s)
+    sb.writeResult("#words", words.length);
+    sb.writeResult("#characters", chars.length);
+    sb.writeResult("#UTF-8 codepoints", utf8s.length);
+    sb.writeResult("#UTF-16 codepoints", utf16s.length);
+    sb.writeVoidTag("br");
     sb.writeResultRichText("word list",
         "[" + sobStringShowList(words, x => `"${sobStringSanitiseEscapes(x)}"`) + "]"
     );
