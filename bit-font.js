@@ -7,8 +7,6 @@ const refreshFontColour = () => {
     SOB_BITFONT_COL.b = parseInt(cssColour.slice(5, 5 + 2), 16);
 }
 
-const loadFont = (text) => sobBitfontFromJSON(JSON.parse(text));
-
 const getGlyphsPerRow = (font) => {
     const glyphsPerRow = document.getElementById("font-column-count").value;
     if (glyphsPerRow) {
@@ -41,32 +39,35 @@ const exportMetadata = (callback) => {
     console.log("got metadata");
 };
 
-const exportGlyphs = (glyphs) => glyphs.map(sobBitfontGlyphGetChar).join("");
-
 const exportToGameMaker = () => getFileBuffer().text().then((text) => {
-    const font = loadFont(text);
+    const meta = JSON.parse(text);
+    const font = sobBitfontFromJSON(meta);
     font.push(sobBitFontCreateGlyphWhitespace(5));
     const glyphsPerRow = getGlyphsPerRow(font);
     exportImage(font, glyphsPerRow);
     exportMetadata((sb) => {
         sb.writeVoidTag("br");
         sb.writeResultRichText("alphabet (includes a space character)",
-            exportGlyphs(font)
+            sobBitfontShowGlyphs(font)
         );
     });
 });
 
 const exportToPixelFont = () => getFileBuffer().text().then((text) => {
-    const font = loadFont(text);
+    const meta = JSON.parse(text);
+    const font = sobBitfontFromJSON(meta);
     const glyphsPerRow = getGlyphsPerRow(font);
     exportImage(font, glyphsPerRow);
     exportMetadata((sb) => {
         sb.writeVoidTag("br");
         sb.writeResultRichText("alphabet",
-            sobBitfontWrapped(font, glyphsPerRow).map(exportGlyphs).join("\n")
+            sobBitfontWrapped(font, glyphsPerRow).map(sobBitfontShowGlyphs).join("\n")
         );
         sb.writeVoidTag("br");
-        sb.writeResultRichText("pixel font settings.json",
-                "TO DO");
+        const pfontJSON = sobBitfontIntoPixelFontJSON(meta, font, glyphsPerRow);
+        sb.writeResultRichText("pixel font settings.json", pfontJSON);
+        sb.writeResultDownload(`${meta.name}-settings.json`, new Blob([pfontJSON], {
+            type : 'text/plain'
+        }));
     });
 });

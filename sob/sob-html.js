@@ -53,6 +53,13 @@ const SobHTMLBuilder = class {
         });
     }
 
+    writeResultDownload(filename, data) {
+        const url = URL.createObjectURL(data);
+        this.writeTag(`a href=\"${url}\" download=\"${filename}\"`, (sb) => {
+            sb.write("(download)");
+        })
+    }
+
     writeAudio(url, type = "audio/wav") {
         this.writeTag("audio controls controlslist=\"noplaybackrate\"", (sb) => {
             sb.writeVoidTag(`source src="${url}" type="${type}"`);

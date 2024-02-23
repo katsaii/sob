@@ -98,7 +98,7 @@ const sobBitfontDrawToCanvas = (iDest, font, imageData, glyphsPerRow = undefined
     }
 };
 
-const sobBitfontGlyphGetChar = ({ char }) => char;
+const sobBitfontShowGlyphs = (glyphs) => glyphs.map(({ char }) => char).join("");
 
 const sobBitfontWrapped = (font, glyphsPerRow) => {
     let rows = [[]];
@@ -111,4 +111,53 @@ const sobBitfontWrapped = (font, glyphsPerRow) => {
         currentRow.push(font[iGlyph]);
     }
     return rows;
+};
+
+const sobBitfontIntoPixelFontJSON = (meta, font, glyphsPerRow) => {
+    return JSON.stringify({
+        "$baseURI": "https://yal.cc/r/20/pixelfont/",
+        "$version": "1.0",
+        "in-glyphs": sobBitfontWrapped(font, glyphsPerRow).map(sobBitfontShowGlyphs),
+        "glyph-color": "auto",
+        "in-kerning": [""],
+        "glyph-width": SOB_BITFONT_CELL_SIZE,
+        "glyph-height": SOB_BITFONT_CELL_SIZE,
+        "glyph-ofs-x": 0,
+        "glyph-ofs-y": 0,
+        "glyph-sep-x": 0,
+        "glyph-sep-y": 0,
+        "glyph-base-x": 0,
+        "glyph-baseline": 12,
+        "glyph-spacing": 0,
+        "font-is-mono": false,
+        "font-em-square": 1024,
+        "font-line-gap": 0,
+        "font-ascend": 768,
+        "font-descend": -256,
+        "font-px-size": 128,
+        "contour-type": "pixel",
+        "font-type": "ttf",
+        "font-name": meta.name,
+        "font-author": "",
+        "font-copy": `(c) ${meta.copy}`,
+        "font-version": "Version 1.0",
+        "font-desc": "",
+        "font-license": "",
+        "font-license-url": "",
+        "font-sample-text": "",
+        "font-preview-text": [
+            "THE QUICK BROWN FOX JUMPS OVER A LAZY DOG.",
+            "the quick brown fox jumps over a lazy dog.",
+            "0123456789",
+            "",
+            "Made with Bit Font Maker 2 (probably)",
+            "https://www.pentacom.jp/pentacom/bitfontmaker2/",
+            "",
+            "Processed with Sob",
+            "https://www.katsaii.com/sob/bit-font.html",
+            "",
+            "Designed for pixel font converter",
+            "https://yal.cc/r/20/pixelfont/"
+        ]
+    });
 };
