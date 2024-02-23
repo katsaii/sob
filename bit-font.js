@@ -1,4 +1,12 @@
-const getFileBuffer = () => document.getElementById("json-file").files[0];
+const asyncGetFileText = (callback) => {
+    const textElem = document.getElementById("json-text");
+    const fileElem = document.getElementById("json-file");
+    if (textElem.value) {
+        callback(textElem.value);
+    } else {
+        fileElem.files[0].text().then(callback);
+    }
+};
 
 const refreshFontColour = () => {
     const cssColour = document.getElementById("font-col").value;
@@ -34,12 +42,11 @@ const exportMetadata = (callback) => {
     if (callback != undefined) {
         callback(sb);
     }
-    console.log({ sb });
     document.getElementById("dest").innerHTML = sb;
     console.log("got metadata");
 };
 
-const exportToGameMaker = () => getFileBuffer().text().then((text) => {
+const exportToGameMaker = () => asyncGetFileText((text) => {
     const meta = JSON.parse(text);
     const font = sobBitfontFromJSON(meta);
     font.push(sobBitFontCreateGlyphWhitespace(5));
@@ -53,7 +60,7 @@ const exportToGameMaker = () => getFileBuffer().text().then((text) => {
     });
 });
 
-const exportToPixelFont = () => getFileBuffer().text().then((text) => {
+const exportToPixelFont = () => asyncGetFileText((text) => {
     const meta = JSON.parse(text);
     const font = sobBitfontFromJSON(meta);
     const glyphsPerRow = getGlyphsPerRow(font);

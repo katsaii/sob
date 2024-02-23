@@ -46,8 +46,8 @@ const sobBitfontGetAtlasSize = (font, glyphsPerRow) => {
     const width = glyphsPerRow * SOB_BITFONT_CELL_SIZE;
     const height = Math.ceil(font.length / glyphsPerRow) * SOB_BITFONT_CELL_SIZE;
     return [
-        Math.max(width, SOB_BITFONT_CELL_SIZE),
-        Math.max(height, SOB_BITFONT_CELL_SIZE)
+        Math.max(isNaN(width) ? 0 : width, SOB_BITFONT_CELL_SIZE),
+        Math.max(isNaN(height) ? 0 : height, SOB_BITFONT_CELL_SIZE)
     ];
 };
 
