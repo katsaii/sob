@@ -1,0 +1,24 @@
+<meta charset="utf-8">
+<script src="./sob/sob-base.js"></script>
+<script src="./base-convert.js"></script>
+<a href="./index.html">&lt;&lt; back</a>
+<p>select source and destination base using the elements below, paste the text convert into one of the boxes and then click one of the buttons conversion buttons (↓↓↓ or ↑↑↑)</p>
+<label for="src-base">input text base:</label>
+<input id="src-base" type="number" value="10" />
+<br>
+<textarea id="src-text" cols="80" rows="5" placeholder="source text"></textarea>
+<br>
+<br>
+<button onclick="srcIntoDest()">↓↓↓</button>
+<button onclick="destIntoSrc()">↑↑↑</button>
+<br>
+<br>
+<label for="dest-base">target text base:</label>
+<input id="dest-base" type="number" value="10" />
+<br>
+<textarea id="dest-text" cols="80" rows="5" placeholder="target text"></textarea>
+<hr>
+<label for="dest-base">customise alphabet:</label>
+<input type="text" placeholder="0123456789abcdefghijklmnopqrstuvwxyz" size="50" style="font-family : monospace">
+<hr>
+<div id="dest"></div>
