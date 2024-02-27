@@ -24,6 +24,7 @@
 <br>
 <label for="check-friendly">programmer-friendly output</label>
 <input type="checkbox" id="check-friendly" checked />
+<br>
 <label for="check-simplify">simplify positional output</label>
 <input type="checkbox" id="check-simplify" checked />
 <hr>
@@ -32,7 +33,7 @@
 <ul>
   <li>supports negative numbers and two's complement representation</li>
   <li>supports positive whole number bases, negative whole number bases, and base 1</li>
-  <li>wrap a digit in parens to define its exact value, e.g. <code>20(10)</code> in base 10 would mean <code>2 * 100 + 0 * 10 + 10 * 1</code></li>
+  <li>wrap a digit in parens to define its exact value, e.g. <code>2(-1)(10)</code> in base 10 would mean <code>2 * 100 + -1 * 10 + 10 * 1</code></li>
   <li>technically supports fractional bases, but these are typically nonsense, cannot represent every number exactly, and inaccurate due to floating point rounding errors</li>
 </ul>
 <h3>See Also</h3>
