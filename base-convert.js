@@ -10,6 +10,8 @@ const getAlphabet = () => {
     const alphabetElem = document.getElementById("alpha-text");
     return alphabetElem.value || alphabetElem.getAttribute("placeholder");
 };
+const getFriendly = () => document.getElementById(`check-friendly`).checked;
+const getSimplified = () => document.getElementById(`check-simplify`).checked;
 
 const sobBaseConvert = (value, base) => {
     let value_ = Number(value);
@@ -70,23 +72,49 @@ const sobBaseDigitsIntoNumber = (base, { digits, sign }) => {
     return sign * total;
 };
 
-const sobBaseDigitsIntoPositionalNotation = (base, { digits, sign }) => {
+const sobBaseDigitsIntoPositionalMath = (base, { digits, sign }, { skipEmpty }) => {
     let sb = "";
     if (sign < 0) {
         sb += "-1 ⋅ ("
     }
-    let pow = 0;
     let first = true;
     let base_ = base < 0 ? `(${base})` : base.toString();
     for (let iDigit = digits.length - 1; iDigit >= 0; iDigit -= 1) {
         const value = digits[iDigit];
+        if (skipEmpty && value == 0) {
+            continue;
+        }
         if (first) {
             first = false;
         } else {
             sb += " + ";
         }
         sb += `${value} ⋅ ${base_}^${iDigit}`;
-        pow += 1;
+    }
+    if (sign < 0) {
+        sb += ")"
+    }
+    return sb;
+};
+
+const sobBaseDigitsIntoPositionalCode = (base, { digits, sign }, { skipEmpty }) => {
+    let sb = "";
+    if (sign < 0) {
+        sb += "-1 * ("
+    }
+    let first = true;
+    for (let iDigit = digits.length - 1; iDigit >= 0; iDigit -= 1) {
+        const value = digits[iDigit];
+        const place = Math.pow(base, iDigit);
+        if (skipEmpty && value == 0) {
+            continue;
+        }
+        if (first) {
+            first = false;
+        } else {
+            sb += " + ";
+        }
+        sb += `${value} * ${place}`;
     }
     if (sign < 0) {
         sb += ")"
@@ -156,8 +184,12 @@ const sobBaseDigitsStringify = ({ digits, sign }, { valueIntoDigit }) => {
 };
 
 const outputResults = (value, srcBase, srcDigits, destBase, destDigits) => {
-    const srcPos = sobBaseDigitsIntoPositionalNotation(srcBase, srcDigits);
-    const destPos = sobBaseDigitsIntoPositionalNotation(destBase, destDigits);
+    const encoder = getFriendly() ?
+            sobBaseDigitsIntoPositionalCode :
+            sobBaseDigitsIntoPositionalMath;
+    const skipEmpty = getSimplified();
+    const srcPos = encoder(srcBase, srcDigits, { skipEmpty });
+    const destPos = encoder(destBase, destDigits, { skipEmpty });
     console.log("results");
     const srcResult = `${value} = ${srcPos}`;
     const destResult = `${value} = ${destPos}`;
