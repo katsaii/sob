@@ -6,11 +6,6 @@
 <a href="./index.html">&lt;&lt; back</a>
 <p>paste text in the box below and then click one of the buttons</p>
 <textarea id="src" cols="80" rows="10" placeholder="input text here"></textarea>
-<ul>
-  <li><code>a <b>dit</b> (.) has a signal length of 1, a <b>dah</b> has a signal length of 3</code></li>
-  <li><code>abnormal signal lengths are written directly as a plain hexadecimal digit</code></li>
-  <li><code>typically all non-word, non-letter pauses last a single bit, but in some cases a signal length of 0 indicates an extended pause</code></li>
-</ul>
 <hr>
 <label for="lang-select">choose a morse code encoding type:</label>
 <select id="lang-select">
@@ -35,6 +30,12 @@
 <hr>
 <textarea id="dest" cols="80" rows="5"></textarea>
 <div id="dest-signal"></div>
+<h3>Notes</h3>
+<ul>
+  <li>a <b>dit</b> (written as a dot: '<code>.</code>') has a signal length of 1, a <b>dah</b> (written as a dash: '<code>-</code>') has a signal length of 3</code></li>
+  <li>abnormal signal lengths, like those found in the american standard, are written directly as a plain hexadecimal digit</li>
+  <li>typically all non-word, non-letter pauses last a single bit, but in some cases a signal length of 0 indicates an extended pause</li>
+</ul>
 <h3>See Also</h3>
 <a href="https://www.britannica.com/topic/Morse-Code">britannica.com/topic/Morse-Code</a>
 <br>

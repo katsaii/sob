@@ -6,44 +6,175 @@ const getBases = () => [
     document.getElementById("src-base").value,
     document.getElementById("dest-base").value
 ];
+const getAlphabet = () => {
+    const alphabetElem = document.getElementById("alpha-text");
+    return alphabetElem.value || alphabetElem.getAttribute("placeholder");
+};
 
-const sobMathEuclidDivision = (dividend, divisor) => {
-    // ensures that the remainder is always a non-negative integer
-    let q = Math.floor(dividend / divisor);
-    let r = (dividend % divisor + divisor) % divisor;
-    if (r < 0) {
-        q -= Math.sign(divisor);
-        r += Math.abs(divisor);
+const sobBaseConvert = (value, base) => {
+    let value_ = Number(value);
+    let base_ = Number(base);
+    let digits, sign;
+    if (base_ < 1 && base_ > -1) {
+        // fractional bases between -1 and 1 are nonsense
+        // the only valid representation of any number in these "bases" is the
+        // number itself multiplied with the unit element `base^0` a.k.a 1
+        sign = value_ < 0 ? -1 : 1;
+        digits = [Math.abs(value_)];
+    } else if (base_ == 1) {
+        sign = value_ < 0 ? -1 : 1;
+        digits = Array(Math.abs(value_)).fill(1);
+    } else if (base_ == -1) {
+        sign = 1;
+        digits = Array(2 * Math.abs(value_)).fill(1);
+        for (let iDigit = value_ < 0 ? 1 : 0; iDigit < digits.length; iDigit += 2) {
+            // basically, base -1 will jump between -1 and 1, so just zip the
+            // digits with zeros to get the desired result
+            digits[iDigit] = 0;
+        }
+    } else {
+        if (base_ > 0 && value_ < 0) {
+            sign = -1;
+            value_ = Math.abs(value_);
+        } else {
+            sign = 1;
+        }
+        digits = [];
+        for (let i = 0; value_ != 0 && i < 512; i += 1) {
+            let prevValue = value_;
+            let r = value_ % base_;
+            value_ = Math.trunc(value_ / base_);
+            if (r < 0) {
+                // make sure the remainder is positive
+                r += Math.abs(base_);
+                value_ += 1;
+            }
+            if (value_ != 0) {
+                // make sure the remainder is a whole number
+                r = Math.round(r);
+                value_ *= (prevValue - r) / (value_ * base_);
+            }
+            digits.push(r);
+        }
     }
-    return [q, r];
+    return { digits, sign };
 };
 
-const sobMathEuclidDivisionArr = (x * b^2 + y * b^1 + z * b^0, divisor) => {
-    // ensures that the remainder is always a non-negative integer
-    let q = Math.floor((x / divisor) * b^2 + (y / divisor) * b^1 + (z / divisor) * b^0);
-    let r = ((x * b^2 + y * b^1 + z * b^0) % divisor + divisor) % divisor;
-    if (r < 0) {
-        q -= Math.sign(divisor);
-        r += Math.abs(divisor);
+const sobBaseDigitsIntoNumber = (base, { digits, sign }) => {
+    let place = 1;
+    let total = 0;
+    for (const value of digits) {
+        total += value * place;
+        place *= base;
     }
-    return [q, r];
+    return sign * total;
 };
 
-const sobBaseParseBigInt = (base, text, alphabet) => {
-    
-};
-
-const sobBaseStringifyBigInt = (baseIn, baseOut, digits) => {
-    if (baseIn == baseOut) {
-        return digits;
+const sobBaseDigitsIntoPositionalNotation = (base, { digits, sign }) => {
+    let sb = "";
+    if (sign < 0) {
+        sb += "-1 ⋅ ("
     }
-    return digits;
+    let pow = 0;
+    let first = true;
+    let digits_ = digits.reverse();
+    let base_ = base < 0 ? `(${base})` : base.toString();
+    for (let iDigit = digits_.length - 1; iDigit >= 0; iDigit -= 1) {
+        const value = digits[iDigit];
+        if (first) {
+            first = false;
+        } else {
+            sb += " + ";
+        }
+        sb += `${value} ⋅ ${base_}^${iDigit}`;
+        pow += 1;
+    }
+    if (sign < 0) {
+        sb += ")"
+    }
+    return sb;
 };
 
-const destIntoSrc = () => {
-    const [baseSrc, baseDest] = getBases();
+const sobBaseCreateAlphabet = (digits) => {
+    let digitIntoValue = new Map;
+    let valueIntoDigit = new Map;
+    let value = 0;
+    for (const digit of digits) {
+        digitIntoValue.set(digit, value);
+        valueIntoDigit.set(value, digit);
+        value += 1;
+    }
+    return { digitIntoValue, valueIntoDigit };
+};
+
+const sobBaseDigitsParse = (text, { digitIntoValue }) => {
+    let digits = [];
+    let sign = 1;
+    let buff = Array.from(text);
+    let iBuff = 0;
+    if (buff[iBuff] == "-" || buff[iBuff] == "+") {
+        sign = buff[iBuff] == "-" ? -1 : 1;
+        iBuff += 1;
+    }
+    for (undefined; iBuff < buff.length; iBuff += 1) {
+        let value, digit;
+        if (buff[iBuff] != "(") {
+            digit = buff[iBuff];
+            value = digitIntoValue.get(buff[iBuff]) ?? Number(digit);
+        } else {
+            digit = "";
+            iBuff += 1;
+            while (iBuff < buff.length) {
+                if (buff[iBuff] == "(") {
+                    throw Error(`unbalanced parens in number, expected a closing ')' at column ${iBuff}`);
+                }
+                if (buff[iBuff] == ")") {
+                    break;
+                }
+                digit += buff[iBuff];
+                iBuff += 1;
+            }
+            value = Number(digit);
+        }
+        if (isNaN(value) || !isFinite(value)) {
+            throw Error(`invalid digit '${digit}', not part of the expected alphabet`);
+        }
+        digits.push(value);
+    }
+    digits.reverse();
+    return { digits, sign };
+};
+
+const sobBaseDigitsStringify = ({ digits, sign }, { valueIntoDigit }) => {
+    let sb = "";
+    if (sign < 0) {
+        sb += "-";
+    }
+    for (let iDigit = digits.length - 1; iDigit >= 0; iDigit -= 1) {
+        sb += valueIntoDigit.get(digits[iDigit]) ?? `(${digits[iDigit]})`;
+    }
+    return sb;
 };
 
 const srcIntoDest = () => {
     const [baseSrc, baseDest] = getBases();
+    const alphabet = sobBaseCreateAlphabet(getAlphabet());
+    console.log("got alphabet");
+    console.log(alphabet);
+    const digitsSrc = sobBaseDigitsParse(getSrcContent(), alphabet);
+    const valueSrc = sobBaseDigitsIntoNumber(baseSrc, digitsSrc);
+    const posSrc = sobBaseDigitsIntoPositionalNotation(baseSrc, digitsSrc);
+    console.log("got source data");
+    console.log(`${valueSrc} = ${posSrc}`);
+    const digitsDest = sobBaseConvert(valueSrc, baseDest);
+    const valueDest = sobBaseDigitsIntoNumber(baseDest, digitsDest);
+    const posDest = sobBaseDigitsIntoPositionalNotation(baseDest, digitsDest);
+    console.log("got dest data");
+    console.log(`${valueDest} = ${posDest}`);
+    setDestContent(sobBaseDigitsStringify(digitsDest, alphabet));
+};
+
+const destIntoSrc = () => {
+    const [baseSrc, baseDest] = getBases();
+    const alphabet = sobBaseCreateAlphabet(getAlphabet());
 };
