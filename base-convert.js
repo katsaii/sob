@@ -51,8 +51,8 @@ const sobBaseConvert = (value, base) => {
             }
             if (value_ != 0) {
                 // make sure the remainder is a whole number
-                r = Math.round(r);
-                value_ *= (prevValue - r) / (value_ * base_);
+                //r = Math.round(r);
+                //value_ *= (prevValue - r) / (value_ * base_);
             }
             digits.push(r);
         }
@@ -77,9 +77,8 @@ const sobBaseDigitsIntoPositionalNotation = (base, { digits, sign }) => {
     }
     let pow = 0;
     let first = true;
-    let digits_ = digits.reverse();
     let base_ = base < 0 ? `(${base})` : base.toString();
-    for (let iDigit = digits_.length - 1; iDigit >= 0; iDigit -= 1) {
+    for (let iDigit = digits.length - 1; iDigit >= 0; iDigit -= 1) {
         const value = digits[iDigit];
         if (first) {
             first = false;
@@ -159,22 +158,29 @@ const sobBaseDigitsStringify = ({ digits, sign }, { valueIntoDigit }) => {
 const srcIntoDest = () => {
     const [baseSrc, baseDest] = getBases();
     const alphabet = sobBaseCreateAlphabet(getAlphabet());
-    console.log("got alphabet");
-    console.log(alphabet);
-    const digitsSrc = sobBaseDigitsParse(getSrcContent(), alphabet);
-    const valueSrc = sobBaseDigitsIntoNumber(baseSrc, digitsSrc);
-    const posSrc = sobBaseDigitsIntoPositionalNotation(baseSrc, digitsSrc);
-    console.log("got source data");
-    console.log(`${valueSrc} = ${posSrc}`);
-    const digitsDest = sobBaseConvert(valueSrc, baseDest);
-    const valueDest = sobBaseDigitsIntoNumber(baseDest, digitsDest);
-    const posDest = sobBaseDigitsIntoPositionalNotation(baseDest, digitsDest);
-    console.log("got dest data");
-    console.log(`${valueDest} = ${posDest}`);
-    setDestContent(sobBaseDigitsStringify(digitsDest, alphabet));
+    const srcDigits = sobBaseDigitsParse(getSrcContent(), alphabet);
+    const srcValue = sobBaseDigitsIntoNumber(baseSrc, srcDigits);
+    const srcPos = sobBaseDigitsIntoPositionalNotation(baseSrc, srcDigits);
+    const destDigits = sobBaseConvert(srcValue, baseDest);
+    const destValue = sobBaseDigitsIntoNumber(baseDest, destDigits);
+    const destPos = sobBaseDigitsIntoPositionalNotation(baseDest, destDigits);
+    setDestContent(sobBaseDigitsStringify(destDigits, alphabet));
+    console.log("results");
+    console.log(`${srcValue} = ${srcPos}`);
+    console.log(`${destValue} = ${destPos}`);
 };
 
 const destIntoSrc = () => {
     const [baseSrc, baseDest] = getBases();
     const alphabet = sobBaseCreateAlphabet(getAlphabet());
+    const destDigits = sobBaseDigitsParse(getDestContent(), alphabet);
+    const destValue = sobBaseDigitsIntoNumber(baseDest, destDigits);
+    const destPos = sobBaseDigitsIntoPositionalNotation(baseDest, destDigits);
+    const srcDigits = sobBaseConvert(destValue, baseSrc);
+    const srcValue = sobBaseDigitsIntoNumber(baseSrc, srcDigits);
+    const srcPos = sobBaseDigitsIntoPositionalNotation(baseSrc, srcDigits);
+    setSrcContent(sobBaseDigitsStringify(srcDigits, alphabet));
+    console.log("results");
+    console.log(`${srcValue} = ${srcPos}`);
+    console.log(`${destValue} = ${destPos}`);
 };
