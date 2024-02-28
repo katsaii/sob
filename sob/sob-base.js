@@ -1,45 +1,43 @@
 const sobBaseConvert = (value, base) => {
-    let value_ = Number(value);
-    let base_ = Number(base);
     let digits, sign;
-    if (base_ < 1 && base_ > -1) {
+    if (base < 1 && base > -1) {
         // fractional bases between -1 and 1 are nonsense
         // the only valid representation of any number in these "bases" is the
         // number itself multiplied with the unit element `base^0` a.k.a 1
-        sign = value_ < 0 ? -1 : 1;
-        digits = [Math.abs(value_)];
-    } else if (base_ == 1) {
-        sign = value_ < 0 ? -1 : 1;
-        digits = Array(Math.abs(value_)).fill(1);
-    } else if (base_ == -1) {
+        sign = value < 0 ? -1 : 1;
+        digits = [Math.abs(value)];
+    } else if (base == 1) {
+        sign = value < 0 ? -1 : 1;
+        digits = Array(Math.abs(value)).fill(1);
+    } else if (base == -1) {
         sign = 1;
-        digits = Array(2 * Math.abs(value_)).fill(1);
-        for (let iDigit = value_ < 0 ? 1 : 0; iDigit < digits.length; iDigit += 2) {
+        digits = Array(2 * Math.abs(value)).fill(1);
+        for (let iDigit = value < 0 ? 1 : 0; iDigit < digits.length; iDigit += 2) {
             // basically, base -1 will jump between -1 and 1, so just zip the
             // digits with zeros to get the desired result
             digits[iDigit] = 0;
         }
     } else {
-        if (base_ > 0 && value_ < 0) {
+        if (base > 0 && value < 0) {
             sign = -1;
-            value_ = Math.abs(value_);
+            value = Math.abs(value);
         } else {
             sign = 1;
         }
         digits = [];
-        for (let i = 0; value_ != 0 && i < 512; i += 1) {
-            let prevValue = value_;
-            let r = value_ % base_;
-            value_ = Math.trunc(value_ / base_);
+        for (let i = 0; value != 0 && i < 512; i += 1) {
+            let prevValue = value;
+            let r = value % base;
+            value = Math.trunc(value / base);
             if (r < 0) {
                 // make sure the remainder is positive
-                r += Math.abs(base_);
-                value_ += 1;
+                r += Math.abs(base);
+                value += 1;
             }
-            if (value_ != 0) {
+            if (value != 0) {
                 // make sure the remainder is a whole number
                 //r = Math.round(r);
-                //value_ *= (prevValue - r) / (value_ * base_);
+                //value *= (prevValue - r) / (value * base);
             }
             digits.push(r);
         }
@@ -162,8 +160,14 @@ const sobBaseDigitsStringify = ({ digits, sign }, { valueIntoDigit }) => {
     if (sign < 0) {
         sb += "-";
     }
-    for (let iDigit = digits.length - 1; iDigit >= 0; iDigit -= 1) {
-        sb += valueIntoDigit.get(digits[iDigit]) ?? `(${digits[iDigit]})`;
+    const valueSanitise = (value) => value >= 0 && value < 10 ? value.toString() : `(${value})`;
+    if (digits.length == 0) {
+        sb += "0";
+    } else {
+        for (let iDigit = digits.length - 1; iDigit >= 0; iDigit -= 1) {
+            let value = digits[iDigit];
+            sb += valueIntoDigit.get(value) ?? valueSanitise(value);
+        }
     }
     return sb;
 };

@@ -3,8 +3,8 @@ const setSrcContent = (value) => document.getElementById("src-text").value = val
 const getDestContent = () => document.getElementById("dest-text").value;
 const setDestContent = (value) => document.getElementById("dest-text").value = value;
 const getBases = () => [
-    document.getElementById("src-base").value,
-    document.getElementById("dest-base").value
+    Number(document.getElementById("src-base").value),
+    Number(document.getElementById("dest-base").value)
 ];
 const getAlphabet = () => {
     const alphabetElem = document.getElementById("alpha-text");
@@ -14,6 +14,10 @@ const getFriendly = () => document.getElementById(`check-friendly`).checked;
 const getSimplified = () => document.getElementById(`check-simplify`).checked;
 
 const outputResults = (value, srcBase, srcDigits, destBase, destDigits) => {
+    if (value == 0) {
+        document.getElementById("dest").innerHTML = "";
+        return;
+    }
     const encoder = getFriendly() ?
             sobBaseDigitsIntoPositionalCode :
             sobBaseDigitsIntoPositionalMath;
