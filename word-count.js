@@ -8,11 +8,10 @@ const getCounts = () => {
     const utf8s = sobStringToUTF8(text);
     const utf16s = sobStringToUTF16(text);
     let sb = new SobHTMLBuilder;
-
-    console.log(words)
-    console.log(chars)
-    console.log(utf8s)
-    console.log(utf16s)
+    console.log(words);
+    console.log(chars);
+    console.log(utf8s);
+    console.log(utf16s);
     sb.writeResult("#words", words.length);
     sb.writeResult("#characters", chars.length);
     sb.writeResult("#UTF-8 codepoints", utf8s.length);
