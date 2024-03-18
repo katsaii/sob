@@ -36,6 +36,24 @@ const toLower = caseConverter({
     visit : (_, value) => value.toLowerCase(),
 });
 
+const titleArticles = { "the" : "the", "a" : "a", "an" : "an" };
+const toTitle = () => {
+    let isFirst = true;
+    return (caseConverter({
+        visit : (_, value) => {
+            let valueArticle = titleArticles[value.toLowerCase()];
+            value = valueArticle ?? value;
+            let capitalise = isFirst || valueArticle == undefined;
+            isFirst = false;
+            if (capitalise) {
+                return value[0].toUpperCase() + value.slice(1);
+            } else {
+                return value;
+            }
+        },
+    }))();
+};
+
 const toCapitalised = caseConverter({
     visit : (_, value) => value[0].toUpperCase() + value.slice(1),
 });
@@ -117,7 +135,7 @@ const leetDigits = {
     "e" : "3", "a" : "4", "s" : "5",
     // nothing for the number 6
     "t" : "7", "b" : "8", "g" : "9",
-}
+};
 const toBasic1337 = caseConverter({
     visit : (_, value) => sobStringToChars(value)
             .map((chr) => leetDigits[chr.toLowerCase()] ?? chr)
