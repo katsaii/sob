@@ -1,6 +1,10 @@
+const sobStringIsWhitespace = (str) => /[ \f\n\r\t\v\u00A0\u2028\u2029]/.test(str)
+
+const sobStringIsAlphanum = (str) => /[A-Za-z0-9]/.test(str)
+
 const sobStringToWords = (str) => str.trim().split(/\s+/);
 
-const sobStringToChars = (str) => Array.from(str);
+const sobStringToChars = Array.from;
 
 const sobStringToUTF16 = (str) => {
     const utf16 = [];
@@ -56,4 +60,74 @@ const sobStringShowList = (xs, each = undefined) => {
         sb += each == undefined ? x : each(x);
     }
     return sb;
+};
+
+const sobStringVisit = (str, visitor, joiner = undefined) => {
+    let offset = 0;
+    const strLen = str.length;
+    const peekChr = (n = 0) => offset + n < strLen ? str.charAt(offset + n) : undefined;
+    const advance = (n = 0) => offset += n;
+    const doVisit = (kind, value) => {
+        if (visitor == undefined) {
+            return value;
+        }
+        return visitor(kind, value);
+    };
+    const doJoin = (kind, values) => {
+        if (joiner == undefined) {
+            return values.join("");
+        }
+        return joiner(kind, values);
+    };
+    const parseWord = () => {
+
+    };
+    const parseWhitespace = () => {
+
+    };
+    const parseOther = () => {
+        const chr = peekChr();
+        advance();
+        return visitor("other", chr);
+    };
+    const parseSentence = () => {
+        let values = [];
+        while (true) {
+            const chr = peekChr();
+            if (chr == undefined) {
+                break;
+            }
+        }
+        return doJoin("sentence", values);
+    };
+
+
+    let segments = [];
+    const getCharKind = (chr) => {
+        if (sobStringIsWhitespace(chr)) { return "whitespace" }
+        if (sobStringIsAlphanum(chr)) { return "alphanum" }
+        return "other";
+    };
+    let currentSegment = undefined;
+    for (let i = 0; i < str.length; i += 1) {
+        const chr = str.charAt(i);
+        const chrKind = getCharKind(chr);
+        if (currentSegment != undefined && chrKind != currentSegment.kind) {
+            segments.push(currentSegment);
+            currentSegment = undefined;
+        }
+        if (currentSegment == undefined) {
+            currentSegment = {
+                str : chr,
+                offset : i,
+                kind : chrKind,
+            };
+            continue;
+        }
+        currentSegment.str += chr;
+    }
+    if (currentSegment != undefined) {
+        segments.push(currentSegment);
+    }
+    return segments;
 };
