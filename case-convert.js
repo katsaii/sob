@@ -36,6 +36,10 @@ const toLower = caseConverter({
     visit : (_, value) => value.toLowerCase(),
 });
 
+const toCapitalised = caseConverter({
+    visit : (_, value) => value[0].toUpperCase() + value.slice(1),
+});
+
 const toKebab = caseConverter({
     visit : (_, value) => value.toLowerCase(),
     join : (_, values) => values.join("-"),
@@ -118,4 +122,28 @@ const toBasic1337 = caseConverter({
     visit : (_, value) => sobStringToChars(value)
             .map((chr) => leetDigits[chr.toLowerCase()] ?? chr)
             .join(""),
+});
+
+const toAlternating = caseConverter({
+    visit : (_, value) => {
+        let upper = true;
+        return sobStringToChars(value)
+            .map((chr) => {
+                upper = !upper;
+                return upper ? chr.toUpperCase() : chr;
+            })
+            .join("");
+    },
+});
+
+const toUpperAlternating = caseConverter({
+    visit : (_, value) => {
+        let upper = false;
+        return sobStringToChars(value)
+            .map((chr) => {
+                upper = !upper;
+                return upper ? chr.toUpperCase() : chr;
+            })
+            .join("");
+    },
 });
