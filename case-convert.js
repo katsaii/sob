@@ -1,10 +1,8 @@
 const getTextContent = () => document.getElementById("src").value;
 const setTextContent = (text) => document.getElementById("dest").value = text;
-const getSkipPunctuation = () => document.getElementById("check-punctuation").checked;
 
-const caseConverter = ({ visit, join }) => () => {
+const caseConverter = ({ visit, join, skipPunct }) => () => {
     const text = getTextContent();
-    const skipPunct = getSkipPunctuation();
     const newText = sobStringVisit(text,
         (kind, value) => {
             if ((kind == "whitespace" || kind == "other") && skipPunct) {
@@ -29,10 +27,12 @@ const caseConverter = ({ visit, join }) => () => {
 };
 
 const toUpper = caseConverter({
+    skipPunct : false,
     visit : (_, value) => value.toUpperCase(),
 });
 
 const toLower = caseConverter({
+    skipPunct : false,
     visit : (_, value) => value.toLowerCase(),
 });
 
@@ -40,6 +40,7 @@ const titleArticles = { "the" : "the", "a" : "a", "an" : "an" };
 const toTitle = () => {
     let isFirst = true;
     return (caseConverter({
+        skipPunct : false,
         visit : (_, value) => {
             let valueArticle = titleArticles[value.toLowerCase()];
             value = valueArticle ?? value;
@@ -55,30 +56,36 @@ const toTitle = () => {
 };
 
 const toCapitalised = caseConverter({
+    skipPunct : false,
     visit : (_, value) => value[0].toUpperCase() + value.slice(1),
 });
 
 const toKebab = caseConverter({
+    skipPunct : true,
     visit : (_, value) => value.toLowerCase(),
     join : (_, values) => values.join("-"),
 });
 
 const toCobol = caseConverter({
+    skipPunct : true,
     visit : (_, value) => value.toUpperCase(),
     join : (_, values) => values.join("-"),
 });
 
 const toSnake = caseConverter({
+    skipPunct : true,
     visit : (_, value) => value.toLowerCase(),
     join : (_, values) => values.join("_"),
 });
 
 const toScreamingSnake = caseConverter({
+    skipPunct : true,
     visit : (_, value) => value.toUpperCase(),
     join : (_, values) => values.join("_"),
 });
 
 const toCamel = caseConverter({
+    skipPunct : true,
     visit : (_, value) => value.toLowerCase(),
     join : (_, values) => {
         let str = values[0];
@@ -92,21 +99,25 @@ const toCamel = caseConverter({
 });
 
 const toPascal = caseConverter({
+    skipPunct : true,
     visit : (_, value) => value[0].toUpperCase() + value.slice(1),
     join : (_, values) => values.join(""),
 });
 
 const toFlat = caseConverter({
+    skipPunct : true,
     visit : (_, value) => value.toLowerCase(),
     join : (_, values) => values.join(""),
 });
 
 const toScreaming = caseConverter({
+    skipPunct : true,
     visit : (_, value) => value.toUpperCase(),
     join : (_, values) => values.join(""),
 });
 
 const toCamelSnake = caseConverter({
+    skipPunct : true,
     visit : (_, value) => value.toLowerCase(),
     join : (_, values) => {
         let str = values[0];
@@ -121,11 +132,13 @@ const toCamelSnake = caseConverter({
 });
 
 const toPascalSnake = caseConverter({
+    skipPunct : true,
     visit : (_, value) => value[0].toUpperCase() + value.slice(1),
     join : (_, values) => values.join("_"),
 });
 
 const toTrain = caseConverter({
+    skipPunct : true,
     visit : (_, value) => value[0].toUpperCase() + value.slice(1),
     join : (_, values) => values.join("-"),
 });
@@ -137,12 +150,14 @@ const leetDigits = {
     "t" : "7", "b" : "8", "g" : "9",
 };
 const toBasic1337 = caseConverter({
+    skipPunct : false,
     visit : (_, value) => sobStringToChars(value)
             .map((chr) => leetDigits[chr.toLowerCase()] ?? chr)
             .join(""),
 });
 
 const toAlternating = caseConverter({
+    skipPunct : false,
     visit : (_, value) => {
         let upper = true;
         return sobStringToChars(value)
@@ -155,6 +170,7 @@ const toAlternating = caseConverter({
 });
 
 const toUpperAlternating = caseConverter({
+    skipPunct : false,
     visit : (_, value) => {
         let upper = false;
         return sobStringToChars(value)
