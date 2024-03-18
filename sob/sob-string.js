@@ -1,6 +1,12 @@
-const sobStringIsWhitespace = (str) => /[ \f\n\r\t\v\u00A0\u2028\u2029]/.test(str)
+const sobStringIsWhitespace = (str) => str != undefined && /[ \f\n\r\t\v\u00A0\u2028\u2029]/.test(str)
 
-const sobStringIsAlphanum = (str) => /[A-Za-z0-9]/.test(str)
+const sobStringIsAlphanum = (str) => str != undefined && /[A-Za-z0-9]/.test(str)
+
+const sobStringIsAlphaUpper = (str) => str != undefined && /[A-Z]/.test(str)
+
+const sobStringIsAlphaLower = (str) => str != undefined && /[a-z]/.test(str)
+
+const sobStringIsNumeric = (str) => str != undefined && /[0-9]/.test(str)
 
 const sobStringToWords = (str) => str.trim().split(/\s+/);
 
@@ -62,33 +68,105 @@ const sobStringShowList = (xs, each = undefined) => {
     return sb;
 };
 
-const sobStringVisit = (str, visitor, joiner = undefined) => {
+const sobStringVisit = (str, visitor = undefined, joiner = undefined) => {
     let offset = 0;
     const strLen = str.length;
     const peekChr = (n = 0) => offset + n < strLen ? str.charAt(offset + n) : undefined;
-    const advance = (n = 0) => offset += n;
+    const advance = (n = 1) => offset += n;
     const doVisit = (kind, value) => {
         if (visitor == undefined) {
             return value;
         }
         return visitor(kind, value);
     };
-    const doJoin = (kind, values) => {
-        if (joiner == undefined) {
-            return values.join("");
+    const doJoin = (kind, values, defaultSeparator = "") => {
+        values = values.filter((value) => value != undefined);
+        if (values.length == 1) {
+            return values[0];
         }
-        return joiner(kind, values);
+        if (joiner == undefined) {
+            return values.join(defaultSeparator);
+        }
+        return joiner(kind, values, defaultSeparator);
     };
-    const parseWord = () => {
-
+    const parseIdentTerminal = () => {
+        let chr = peekChr();
+        let str = "";
+        if (chr != undefined) {
+            advance();
+            str += chr;
+            let chrNext = peekChr();
+            if (sobStringIsAlphaUpper(chr) && chrNext != undefined && sobStringIsAlphaUpper(chrNext)) {
+                // for situations like "GUILayer" becoming "GUI" and "Layer"
+                while (true) {
+                    chr = peekChr(0);
+                    if (chr == undefined || !sobStringIsAlphaUpper(chr)) {
+                        break;
+                    }
+                    let chrNext = peekChr(1);
+                    if (chrNext != undefined && sobStringIsAlphaLower(chrNext)) {
+                        break;
+                    }
+                    str += chr;
+                    advance();
+                }
+            } else if (sobStringIsNumeric(chr)) {
+                // for numbers
+                while (true) {
+                    chr = peekChr();
+                    if (chr == undefined || !sobStringIsNumeric(chr)) {
+                        break;
+                    }
+                    str += chr;
+                    advance();
+                }
+            } else {
+                while (true) {
+                    chr = peekChr();
+                    if (chr == undefined || !sobStringIsAlphaLower(chr)) {
+                        break;
+                    }
+                    str += chr;
+                    advance();
+                }
+            }
+        }
+        return doVisit("word", str);
+    };
+    const parseIdentCamel = () => {
+        let values = [parseIdentTerminal()];
+        while (sobStringIsAlphanum(peekChr())) {
+            values.push(parseIdentTerminal());
+        }
+        return doJoin("camel", values);
+    };
+    const parseIdentSnake = () => {
+        let values = [parseIdentCamel()];
+        while (peekChr() == "_") {
+            advance();
+            values.push(parseIdentCamel());
+        }
+        return doJoin("snake", values, "_");
+    };
+    const parseIdentKebab = () => {
+        let values = [parseIdentSnake()];
+        while (peekChr() == "-") {
+            advance();
+            values.push(parseIdentSnake());
+        }
+        return doJoin("kebab", values, "-");
     };
     const parseWhitespace = () => {
-
-    };
-    const parseOther = () => {
-        const chr = peekChr();
-        advance();
-        return visitor("other", chr);
+        let str = "";
+        while (true) {
+            const chr = peekChr();
+            if (chr == undefined || !sobStringIsWhitespace(chr)) {
+                break;
+            }
+            str += chr;
+            advance();
+        }
+        return doVisit("whitespace", str);
     };
     const parseSentence = () => {
         let values = [];
@@ -97,37 +175,16 @@ const sobStringVisit = (str, visitor, joiner = undefined) => {
             if (chr == undefined) {
                 break;
             }
+            if (sobStringIsWhitespace(chr)) {
+                values.push(parseWhitespace());
+            } else if (sobStringIsAlphanum(chr)) {
+                values.push(parseIdentKebab());
+            } else {
+                advance();
+                values.push(doVisit("other", chr));
+            }
         }
         return doJoin("sentence", values);
     };
-
-
-    let segments = [];
-    const getCharKind = (chr) => {
-        if (sobStringIsWhitespace(chr)) { return "whitespace" }
-        if (sobStringIsAlphanum(chr)) { return "alphanum" }
-        return "other";
-    };
-    let currentSegment = undefined;
-    for (let i = 0; i < str.length; i += 1) {
-        const chr = str.charAt(i);
-        const chrKind = getCharKind(chr);
-        if (currentSegment != undefined && chrKind != currentSegment.kind) {
-            segments.push(currentSegment);
-            currentSegment = undefined;
-        }
-        if (currentSegment == undefined) {
-            currentSegment = {
-                str : chr,
-                offset : i,
-                kind : chrKind,
-            };
-            continue;
-        }
-        currentSegment.str += chr;
-    }
-    if (currentSegment != undefined) {
-        segments.push(currentSegment);
-    }
-    return segments;
+    return parseSentence();
 };

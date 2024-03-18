@@ -2,11 +2,42 @@
 <script src="./sob/sob-html.js"></script>
 <script src="./sob/sob-string.js"></script>
 <script src="./case-convert.js"></script>
+<style>
+    @keyframes marquee {
+        from { transform : translateX(100%) }
+        to { transform : translateX(-100%) }
+    }
+    #novelty {
+        display : inline-flex;
+        overflow : hidden;
+        width : 60px;
+    }
+    #novelty span {
+        display : inline-block;
+        animation : marquee 2s linear infinite;
+    }
+</style>
 <a href="./index.html">&lt;&lt; back</a>
 <p>paste text in the box below and then click one of the buttons</p>
 <textarea id="src" cols="80" rows="10" placeholder="hello world"></textarea>
 <hr>
+<i>typical</i>
 <button onclick="toLower()">lower case</button>
 <button onclick="toUpper()">UPPER CASE</button>
+<hr>
+<code>programmer</code>
+<button onclick="toSnake()"><code>snake_case</code></button>
+<button onclick="toScreamingSnake()"><code>SCREAMING_SNAKE_CASE</code></button>
+<button onclick="toCamel()"><code>camelCase</code></button>
+<button onclick="toPascal()"><code>PascalCase</code></button>
+<button onclick="toKebab()"><code>kebab-case</code></button>
+<button onclick="toCobol()"><code>COBOL-CASE</code></button>
+<button onclick="toPackage()"><code>packagecase</code></button>
+<hr>
+<span id="novelty"><span>novelty</span></span>
+<button onclick="toBasic1337()"><code>5imp1ifi3d 13375p34k</code></button>
+<hr>
+<input type="checkbox" id="check-punctuation" />
+<label for="check-punctuation">ignore punctuation</label>
 <hr>
 <textarea id="dest" cols="80" rows="10" placeholder="the result will appear here"></textarea>
