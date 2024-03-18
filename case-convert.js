@@ -74,11 +74,39 @@ const toPascal = caseConverter({
     join : (_, values) => values.join(""),
 });
 
-const toPackage = caseConverter({
+const toFlat = caseConverter({
     visit : (_, value) => value.toLowerCase(),
     join : (_, values) => values.join(""),
 });
 
+const toScreaming = caseConverter({
+    visit : (_, value) => value.toUpperCase(),
+    join : (_, values) => values.join(""),
+});
+
+const toCamelSnake = caseConverter({
+    visit : (_, value) => value.toLowerCase(),
+    join : (_, values) => {
+        let str = values[0];
+        for (let i = 1; i < values.length; i += 1) {
+            const value = values[i];
+            str += "_";
+            str += value[0].toUpperCase();
+            str += value.slice(1);
+        }
+        return str;
+    },
+});
+
+const toPascalSnake = caseConverter({
+    visit : (_, value) => value[0].toUpperCase() + value.slice(1),
+    join : (_, values) => values.join("_"),
+});
+
+const toTrain = caseConverter({
+    visit : (_, value) => value[0].toUpperCase() + value.slice(1),
+    join : (_, values) => values.join("-"),
+});
 
 const leetDigits = {
     "o" : "0", "l" : "1", "z" : "2",
