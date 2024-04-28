@@ -52,7 +52,7 @@ const writeMorseCodeData = (sb, morse, decoder) => {
         sb.write(ruler);
         sb.writeVoidTag("br");
         sb.writeVoidTag("br");
-        sb.write(morseBin.replaceAll("1", "▓").replaceAll("0", "˽"));
+        sb.write(morseBin.replaceAll("1", "▓").replaceAll("0", "_"));
         sb.writeVoidTag("br");
         sb.write(morse.map(morseWord => morseWord.map(morseLetter => {
             const letter = decoder.get(morseLetter) ?? "?";
