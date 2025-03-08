@@ -1,0 +1,28 @@
+<meta charset="utf-8">
+<link rel="stylesheet" href="./root.css">
+<script src="./sob/sob-html.js"></script>
+<script src="./sob/sob-bitfont.js"></script>
+<script src="./sob/sob-graphics.js"></script>
+<script src="./bit-font.js"></script>
+<a href="./index.html">&lt;&lt; back</a>
+<p>upload a json file exported from <a href="https://www.pentacom.jp/pentacom/bitfontmaker2/">Bit Font Maker 2</a> (using the <img style="vertical-align : middle" src="https://www.pentacom.jp/pentacom/bitfontmaker2/img/menu_data.gif"> "<code>Data Import/Export</code>" button)</p>
+<input type="file" id="json-file">
+<p>alternatively, paste the json in the following input box and then click one of the buttons</p>
+<textarea id="json-text" cols="80" rows="5" placeholder="paste Bit Font Maker 2 json here"></textarea>
+<hr>
+<label for="font-col">choose a colour for the font:</label>
+<input id="font-col" type="color">
+<br>
+<label for="font-column-count">customise the number of glyphs per row (or leave it blank for automatic scale):</label>
+<input id="font-column-count" type="number">
+<hr>
+<button onclick="exportToGameMaker()">export for GameMaker</button>
+<button onclick="exportToPixelFont()">export for pixel font converter</button>
+<hr>
+<canvas style="display : none" id="dest-canvas"></canvas>
+<br>
+<div id="dest"></div>
+<h3>See Also</h3>
+<a href="https://yal.cc/r/20/pixelfont/">yal.cc/r/20/pixelfont/</a>
+<br>
+<a href="https://www.pentacom.jp/pentacom/bitfontmaker2/">pentacom.jp/pentacom/bitfontmaker2/</a>

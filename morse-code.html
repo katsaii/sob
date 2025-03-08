@@ -1,0 +1,47 @@
+<meta charset="utf-8">
+<link rel="stylesheet" href="./root.css">
+<script src="./sob/sob-html.js"></script>
+<script src="./sob/sob-audio.js"></script>
+<script src="./sob/sob-morse.js"></script>
+<script src="./morse-code.js"></script>
+<a href="./index.html">&lt;&lt; back</a>
+<p>paste text in the box below and then click one of the buttons</p>
+<textarea id="src" cols="80" rows="10" placeholder="input text here"></textarea>
+<hr>
+<label for="lang-select">choose a morse code encoding type:</label>
+<select id="lang-select">
+  <option value="international">international (ITU)</option>
+  <option value="international-non-latin">international (ITU) + non-latin extensions</option>
+  <option value="american">american (Morse)</option>
+  <option value="continental">continental (Gerke)</option>
+</select>
+<br>
+<input type="checkbox" id="check-numbers" checked />
+<label for="check-punctuation">numbers</label>
+<br>
+<input type="checkbox" id="check-punctuation" checked />
+<label for="check-punctuation">punctuation</label>
+<br>
+<input type="checkbox" id="check-non-standard" />
+<label for="check-non-standard">non-standard</label>
+<hr>
+<button onclick="encodeMorse()">encode morse code</button>
+<button onclick="decodeMorse()">decode morse code</button>
+<button onclick="decodeMorseBinary()">decode binary signal</button>
+<hr>
+<textarea id="dest" cols="80" rows="5"></textarea>
+<div id="dest-signal"></div>
+<h3>Notes</h3>
+<ul>
+  <li>a <b>dit</b> (written as a dot: '<code>.</code>') has a signal length of 1, a <b>dah</b> (written as a dash: '<code>-</code>') has a signal length of 3</code></li>
+  <li>abnormal signal lengths, like those found in the american standard, are written directly as a plain hexadecimal digit</li>
+  <li>typically all non-word, non-letter pauses last a single bit, but in some cases a signal length of 0 indicates an extended pause</li>
+</ul>
+<h3>See Also</h3>
+<a href="https://www.britannica.com/topic/Morse-Code">britannica.com/topic/Morse-Code</a>
+<br>
+<a href="https://en.wikipedia.org/wiki/American_Morse_code">en.wikipedia.org/wiki/American_Morse_code</a>
+<br>
+<a href="https://en.wikipedia.org/wiki/Morse_code_for_non-Latin_alphabets">en.wikipedia.org/wiki/Morse_code_for_non-Latin_alphabets</a>
+<br>
+<a href="https://www.omniglot.com/writing/morsecode.htm">omniglot.com/writing/morsecode.htm</a>

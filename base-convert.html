@@ -1,0 +1,49 @@
+<meta charset="utf-8">
+<link rel="stylesheet" href="./root.css">
+<script src="./sob/sob-html.js"></script>
+<script src="./sob/sob-base.js"></script>
+<script src="./base-convert.js"></script>
+<a href="./index.html">&lt;&lt; back</a>
+<p>select source and destination base using the elements below, paste the text convert into one of the boxes and then click one of the buttons conversion buttons (↓↓↓ or ↑↑↑)</p>
+<label for="src-base">input text base:</label>
+<input id="src-base" type="number" value="10" />
+<!--<label for="src-twos">complement:</label>
+<input type="checkbox" id="src-twos" />-->
+<br>
+<textarea id="src-text" cols="80" rows="5" placeholder="source text"></textarea>
+<br>
+<br>
+<button onclick="srcIntoDest()">↓↓↓</button>
+<button onclick="destIntoSrc()">↑↑↑</button>
+<br>
+<br>
+<label for="dest-base">target text base:</label>
+<input id="dest-base" type="number" value="10" />
+<!--<label for="dest-twos">complement:</label>
+<input type="checkbox" id="dest-twos" />-->
+<br>
+<textarea id="dest-text" cols="80" rows="5" placeholder="target text"></textarea>
+<hr>
+<label for="alpha-text">customise alphabet:</label>
+<input id="alpha-text" type="text" placeholder="0123456789abcdefghijklmnopqrstuvwxyz" size="50" style="font-family : monospace">
+<br>
+<label for="check-friendly">programmer-friendly output:</label>
+<input type="checkbox" id="check-friendly" checked />
+<br>
+<label for="check-simplify">simplify positional output:</label>
+<input type="checkbox" id="check-simplify" checked />
+<hr>
+<div id="dest"></div>
+<h3>Notes</h3>
+<ul>
+  <li>supports negative numbers<!--and two's complement representation--></li>
+  <li>supports positive whole number bases, negative whole number bases, and base 1</li>
+  <li>wrap a digit in parens to define its exact value, e.g. <code>2(-1)(10)</code> in base 10 would mean <code>2 * 100 + -1 * 10 + 10 * 1</code></li>
+  <li>technically supports fractional bases, but these are typically nonsense, cannot represent every number exactly, and inaccurate due to floating point rounding errors</li>
+</ul>
+<h3>See Also</h3>
+<a href="https://en.wikipedia.org/wiki/Non-integer_base_of_numeration">en.wikipedia.org/wiki/Non-integer_base_of_numeration</a>
+<br>
+<a href="https://en.wikipedia.org/wiki/Negative_base">en.wikipedia.org/wiki/Negative_base</a>
+<br>
+<a href="https://www.cs.cornell.edu/~tomf/notes/cps104/twoscomp.html">www.cs.cornell.edu/~tomf/notes/cps104/twoscomp.html</a>
