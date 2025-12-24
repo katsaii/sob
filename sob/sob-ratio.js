@@ -70,32 +70,3 @@ class SobRational {
     toString() { return `${this.n} // ${this.m}` }
     valueOf() { return this.n / this.m }
 }
-
-class SobRecipe {
-    constructor () {
-        this.name = undefined;
-        this.craftTime = 0;
-        this.inputs = new Map;
-        this.inputsQuantity = 0;
-        this.outputs = new Map;
-        this.outputsQuantity = 0;
-    }
-
-    addInput(resource, quantity = 1) {
-        this.inputsQuantity += quantity;
-        return this.inputs.set(resource, quantity);
-    }
-
-    addOuput(resource, quantity = 1) {
-        this.outputsQuantity += quantity;
-        return this.outputs.set(resource, quantity);
-    }
-}
-
-const sobMachineRatio = (throughput, craftTime, quantity) => {
-    return new SobRational(throughput * craftTime, quantity);
-};
-
-const sobBuildRecipeGraph = (throughput, recipes) => {
-    // builds a graph of all recipes and their resource outputs
-};

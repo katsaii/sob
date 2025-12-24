@@ -1,19 +1,23 @@
+const getTextContent = () => document.getElementById("src").value;
+const setTextContent = (text) => document.getElementById("src").value = text;
+
+const getMachineRatio = (throughput, craftTime, quantity) => {
+    return new SobRational(throughput * craftTime, quantity);
+};
+
+const parseFactory = (src) => {
+    let p = program.run(src);
+    if (p.error) {
+        console.log(SobParseError.prettyPrint(p.error));
+    }
+    return p.result;
+};
+
+const analyse = () => {
+    console.log(parseFactory(getTextContent()));
+}
+
 /*
-
-throughput 60/s
-
-// aliases
-atom bolt         = `-b-b-b-b-b-b`
-atom circuit      = `-c-c-c-c-c-c`
-atom construction = `-C-C-C-C-C-C`
-atom wire         = `-w-w-w-w-w-w`
-
-stamp-bolt         : `R---------R-`            =(9s)=>  3 * bolt
-stamp-circuit      : `P-B-B-B-B-P-` + 3 * bolt =(15s)=> circuit
-stamp-construction : 2 * bolt                  =(16s)=> 2 * construction
-stamp-wire         : `P-B-B-B-B-P-`            =(10s)=> 5 * wire
-
-stamp-circuit-ex   : 3 * wire + 2 * bolt + `R---------R-` + `P-B-B-B-B-P-` =(6s)=> 3 * circuit
 
 ---
 
@@ -40,30 +44,3 @@ e = [1/3x b]
 f = [1/5x d]
 
 */
-
-const space = sobPMatch(/(?:(?:#.*\n)|\s)*/);
-const eof_ = sobPMap(sobPMatch(/^$/), { error : _ => "expected end of file" });
-const token = (parser) => sobPKeepFirst(parser, space);
-
-const ident = token(sobPMap(sobPMatch(/^(?:[A-Za-z_\-]+)|(?:`[^`]+`)/), {
-    result : x => x.replace("`", ""),
-    error : _ => "expected identifier" 
-}));
-
-const number = token(sobPMap(sobPMatch(/^-?[0-9_]+(\.[0-9_]+)?/), {
-    result : x => Number(x.replace("_", "")),
-    error : _ => "expected number",
-}));
-
-const decl = sobPAlt([ident, number]);
-
-const parser = sobPKeepFirst(sobPSkipFirst(space, sobPMany(decl)), eof_);
-
-const parseFactory = (src) => {
-    let p = sobParse(parser, src);
-    let errorMsg = sobParseGetErrorMessage(p);
-    if (errorMsg) {
-        console.log(errorMsg);
-    }
-    return p;
-};
