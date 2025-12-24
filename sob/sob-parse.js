@@ -102,24 +102,28 @@ class SobParse {
         return SobParse._makeOk(p, result);
     });
 
-    static many = (parser, terminator = undefined) => new SobParse((p) => {
+    static many = (parser) => new SobParse((p) => {
         if (p.error) { return p }
         const result = [];
-        while (true) {
-            let p2 = parser.fn(p);
-            if (p2.error) {
-                if (terminator != undefined && terminator.fn(p).error) {
-                    // if not terminated by the expected terminator parselet,
-                    // propagate the error state
-                    return p2;
-                }
-                break;
+        let done = false;
+        while (!done) {
+            let pNext = parser.fn(p);
+            if (pNext.error) {
+                done = true;
+            } else {
+                p = pNext;
+                result.push(p.result);
             }
-            p = p2;
-            result.push(p.result);
         }
         return SobParse._makeOk(p, result);
     });
+
+    static manyDelimitedBy = (parser, delimiter) => {
+        return SobParse.seq([
+            SobParse.many(SobParse.keepFirst(parser, delimiter)),
+            parser,
+        ]).map({ onResult : ([xs, x]) => [...xs, x] });
+    };
 
     static either = (parsers) => new SobParse((p) => {
         if (p.error) { return p }

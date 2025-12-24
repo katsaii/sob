@@ -8,7 +8,7 @@ const eof_ = P.matchRegExp(/^$/).map({
     onError : (_, src, idx) => new PErr("expected end of file", src, idx),
 });
 
-const ident = token(P.matchRegExp(/(?:^[A-Za-z_\-]+)|(?:^`[^`]+`)/)).map({
+const ident = token(P.matchRegExp(/(?:^[A-Za-z_\-][A-Za-z0-9_\-]*)|(?:^`[^`]+`)/)).map({
     onResult : x => x.replace("`", ""),
     onError : (_, src, idx) => new PErr("expected identifier", src, idx),
 });
@@ -36,34 +36,40 @@ const declAtom = P.seq([
     onResult : x => ({ kind : "atom", value : { name : x[1], value : x[3] } }),
 });
 
-const resources = ident
+const typeRes = P.either([
+    ident.map({ onResult : (name) => ({ name, amount : 1 }) }),
+    P.seq([number, keyword("x"), ident]).map({
+        onResult : ([amount, , name]) => ({ name, amount }),
+    }),
+]);
 
-const declRecipe = P.seq([
-    ident,
-    keyword(":"),
-    resources,
+const typeResMany = P.manyDelimitedBy(typeRes, keyword("+"));
+
+const type = P.seq([
+    typeResMany,
     keyword("=("),
     number,
     keyword("s"),
     keyword(")=>"),
-    resources,
+    typeResMany,
 ]).map({
-    onResult : x => ({
-        kind : "recipe",
-        value : {
-            name : x[0],
-            duration : x[4],
-            inputs : x[2],
-            outputs : x[7],
-        }
-    }),
+    onResult : ([inputs, , duration, , , outputs]) => ({ inputs, duration, outputs }),
+});
+
+const declRecipe = P.seq([
+    ident,
+    keyword(":"),
+    type
+]).map({
+    onResult : ([name, , type_]) => ({ kind : "recipe", value : { name, ...type_ } }),
 });
 
 const decl = P.either([declAtom, declRecipe]);
 
 const program = P.skipFirst(space, P.seq([
     throughput,
-    P.many(decl, eof_)
+    P.many(decl),
+    P.either([eof_, decl]), // the second `decl` makes it possible to report errors
 ])).map({
     onResult : x => {
         let throughput = x[0];
