@@ -55,12 +55,15 @@ const number = token(sobPMap(sobPMatch(/^-?[0-9_]+(\.[0-9_]+)?/), {
     error : _ => "expected number",
 }));
 
-const parser = sobPKeepFirst(sobPSkipFirst(space, sobPSequence([
-    ident,
-    ident,
-    number,
-])), eof_);
+const decl = sobPAlt([ident, number]);
+
+const parser = sobPKeepFirst(sobPSkipFirst(space, sobPMany(decl)), eof_);
 
 const parseFactory = (src) => {
-    return sobParse(parser, src);
+    let p = sobParse(parser, src);
+    let errorMsg = sobParseGetErrorMessage(p);
+    if (errorMsg) {
+        console.log(errorMsg);
+    }
+    return p;
 };
