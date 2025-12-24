@@ -1,14 +1,4 @@
-/*
-throughput = 60/m (1/s)
-
-Recipes
---------
-3x -b-b-b-b-b-b = 1x R---------R-                   9s  Bolt Stamper
-1x -c-c-c-c-c-c = 1x P-B-B-B-B-P- + 3x -b-b-b-b-b-b 15s Circuit Stamper
-2x -C-C-C-C-C-C = 2x -b-b-b-b-b-b                   16s Construction 
-*/
-
-const gcd = (a, b) => !b ? a : gcd(b, a % b);
+const sobGcd = (a, b) => !b ? a : sobGcd(b, a % b);
 
 class SobRational {
     constructor (n = 0, m = 1) {
@@ -24,7 +14,7 @@ class SobRational {
         return this.TEMP_;
     }
 
-    addN(otherN, otherM = undefined) { this.add(SobRational.makeTemp_(otherN, otherM)) }
+    addN(otherN, otherM = undefined) { return this.add(SobRational.makeTemp_(otherN, otherM)) }
     add(other) {
         if (this.m == other.m) {
             this.n = this.n + other.n;
@@ -33,9 +23,10 @@ class SobRational {
             this.m = this.m * other.m;
         }
         this.simplify();
+        return this;
     }
 
-    subN(otherN, otherM = undefined) { this.sub(SobRational.makeTemp_(otherN, otherM)) }
+    subN(otherN, otherM = undefined) { return this.sub(SobRational.makeTemp_(otherN, otherM)) }
     sub(other) {
         if (this.m == other.m) {
             this.n = this.n - other.n;
@@ -44,24 +35,27 @@ class SobRational {
             this.m = this.m * other.m;
         }
         this.simplify();
+        return this;
     }
 
-    multN(otherN, otherM = undefined) { this.mult(SobRational.makeTemp_(otherN, otherM)) }
+    multN(otherN, otherM = undefined) { return this.mult(SobRational.makeTemp_(otherN, otherM)) }
     mult(other) {
         this.n = this.n * other.n;
         this.m = this.m * other.m;
         this.simplify();
+        return this;
     }
 
-    divN(otherN, otherM = undefined) { this.div(SobRational.makeTemp_(otherN, otherM)) }
+    divN(otherN, otherM = undefined) { return this.div(SobRational.makeTemp_(otherN, otherM)) }
     div(other) {
         this.n = this.n * other.m;
         this.m = this.m * other.n;
         this.simplify();
+        return this;
     }
 
     simplify() {
-        let r = gcd(this.n, this.m);
+        let r = sobGcd(this.n, this.m);
         if (r == 0) {
             return;
         }
@@ -74,9 +68,9 @@ class SobRational {
     }
 
     toString() { return `${this.n} // ${this.m}` }
+    valueOf() { return this.n / this.m }
 }
 
-// throughputPerS * craftTimeS / quantity = machine ratio
 class SobRecipe {
     constructor () {
         this.name = undefined;
@@ -97,3 +91,11 @@ class SobRecipe {
         return this.outputs.set(resource, quantity);
     }
 }
+
+const sobMachineRatio = (throughput, craftTime, quantity) => {
+    return new SobRational(throughput * craftTime, quantity);
+};
+
+const sobBuildRecipeGraph = (throughput, recipes) => {
+    // builds a graph of all recipes and their resource outputs
+};
