@@ -23,6 +23,13 @@ const number = token(P.matchRegExp(/^-?[0-9_]+(\.[0-9_]+)?/).map({
     onError : (_, src, idx) => new PErr("expected number", src, idx),
 }));
 
+const numberRational = P.either([
+    P.seq([number, keyword("/"), number]).map({
+        onResult : ([n, , m]) => new SobRational(n, m),
+    }),
+    number,
+]);
+
 const throughput = P.seq([
     keyword("throughput"),
     number,
@@ -50,17 +57,27 @@ const typeRes = P.either([
     }),
 ]);
 
-const typeResMany = P.manyDelimitedBy(typeRes, keyword("+"));
+const typeResMany = P.either([
+    keyword("nothing").map({ onResult : _ => [] }),
+    P.manyDelimitedBy(typeRes, keyword("+")),
+]);
+
+const typeDuration = P.either([
+    P.seq([
+        keyword("=("),
+        numberRational,
+        keyword("s"),
+        keyword(")=>"),
+    ]).map({ onResult : ([, duration, ]) => duration }),
+    keyword("==>").map({ onResult : _ => 0 }),
+])
 
 const type = P.seq([
     typeResMany,
-    keyword("=("),
-    number,
-    keyword("s"),
-    keyword(")=>"),
+    typeDuration,
     typeResMany,
 ]).map({
-    onResult : ([inputs, , duration, , , outputs]) => ({ inputs, duration, outputs }),
+    onResult : ([inputs, duration, outputs]) => ({ inputs, duration, outputs }),
 });
 
 const declScheme = P.seq([

@@ -10,7 +10,7 @@ id : "a" =(1s)=> "a"
 
 examples.push(
     `
-throughput 60/s
+throughput 1/s
 
 type bolt         = "-b-b-b-b-b-b"
 type circuit      = "-c-c-c-c-c-c"

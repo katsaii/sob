@@ -2,8 +2,24 @@ const sobGcd = (a, b) => !b ? a : sobGcd(b, a % b);
 
 class SobRational {
     constructor (n = 0, m = 1) {
-        this.n = n; // top value
-        this.m = m; // bottom value
+        if (n instanceof SobRational || m instanceof SobRational) {
+            if (n instanceof SobRational) {
+                this.n = n.n;
+                this.m = n.m;
+            } else {
+                this.n = n.valueOf();
+                this.m = 1;
+            }
+            if (m instanceof SobRational) {
+                this.n = this.n * m.m;
+                this.m = this.m * m.n;
+            } else {
+                this.m = this.m * m.valueOf();
+            }
+        } else {
+            this.n = n.valueOf(); // top value
+            this.m = m.valueOf(); // bottom value
+        }
         this.simplify();
     }
 

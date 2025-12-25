@@ -21,23 +21,36 @@ const loadExample = (n) => {
 };
 
 let prevTextContent = undefined;
+let analyseResult = { };
 const analyse = () => {
-    const textContent = getTextContent();
-    if (textContent == prevTextContent) {
-        return;
-    }
-    prevTextContent = textContent;
-    const p = program.run(textContent);
-    console.log(p);
-    if (p.error) {
-        setOutputContent(SobParseError.prettyPrint(p.error));
-        return;
-    }
-    setOutputContent("");
-    const typedefs = buildTypedefs(p.result.typedefs);
-    const constraints = buildConstraints(typedefs, p.result.schemes);
-    if (getVerbose()) {
-        printConstraints(typedefs, constraints);
+    try {
+        const textContent = getTextContent();
+        if (textContent == prevTextContent) {
+            return;
+        }
+        analyseResult = { };
+        prevTextContent = textContent;
+        const p = program.run(textContent);
+        if (getVerbose()) {
+            analyseResult.p = p;
+        }
+        if (p.error) {
+            setOutputContent(SobParseError.prettyPrint(p.error));
+            return;
+        }
+        setOutputContent("");
+        const typedefs = buildTypedefs(p.result.typedefs);
+        const constraints = buildConstraints(typedefs, p.result.throughput, p.result.schemes);
+        if (getVerbose()) {
+            analyseResult.typedefs = typedefs;
+            analyseResult.constraints = constraints;
+            appendOutputContent(`constraints:\n===========\n\n${
+                sprintConstraints(typedefs, constraints)
+            }\n\n`);
+        }
+    } catch (ex) {
+        setOutputContent(`oh no! encountered an exception:\n\n${ex}`);
+        console.error(ex);
     }
 };
 
@@ -58,47 +71,83 @@ const buildTypedefs = (typedefsAst) => {
     };
 };
 
-const buildConstraints = (typedefs, schemes) => {
-    const constraints = [];
-    for (const { name, inputs, duration, outputs } of schemes) {
-        for (const i in outputs) {
-            const out_ = outputs[i];
-            constraints.push({
-                output : typedefs.toAtom(out_.name),
-                input : inputs.map(in_ => ({
-                    value : typedefs.toAtom(in_.name),
-                    amount : new SobRational(in_.amount, out_.amount),
+const buildConstraints = (typedefs, throughput, schemes) => {
+    const constraints = new Map;
+    for (const scheme of schemes) {
+        for (const [i, output] of scheme.outputs.entries()) {
+            const atom = typedefs.toAtom(output.name);
+            const { bounds } = constraints.getOrInsert(atom, { atom, bounds : [] });
+            bounds.push({
+                scheme : scheme.name,
+                machineRatio : new SobRational(scheme.duration, output.amount).multN(throughput),
+                duration : scheme.duration,
+                inputs : scheme.inputs.map(input => ({
+                    atom : typedefs.toAtom(input.name),
+                    amount : new SobRational(input.amount, output.amount),
                 })),
-                excess : outputs.filter((_, j) => i != j).map(out2 => ({
-                    value : typedefs.toAtom(out2.name),
-                    amount : new SobRational(out2.amount, out_.amount),
+                excess : scheme.outputs.filter((_, j) => i != j).map(other => ({
+                    atom : typedefs.toAtom(other.name),
+                    amount : new SobRational(other.amount, output.amount),
                 })),
-                duration : new SobRational(duration, out_.amount),
-            })
+            });
         }
     }
     return constraints;
 };
 
-const printConstraints = (typedefs, constraints) => {
-    appendOutputContent("constraints:\n");
-    const showTypes = (types) => types
-        .map(({ value, amount }) => `${amount}x ${typedefs.fromAtomPretty(value)}`)
-        .join(" + ");
-    for (const i in constraints) {
-        const c = constraints[i];
-        let line = "";
-        line += `[${i}]: 1x ${typedefs.fromAtomPretty(c.output)}\t<=(${c.duration}s)=\t`;
-        line += showTypes(c.input);
-        if (c.excess.length > 0) {
-            line += ` excess ${showTypes(c.excess)}`;
-        }
-        appendOutputContent(line);
-    }
+const sprintAtomAmount = (typedefs, { atom, amount = 1 }) => {
+    let type = typedefs.fromAtomPretty(atom);
+    return amount.valueOf() == 1 ? type : `${amount}x ${type}`;
 };
 
-const solveConstraints = (typedefs, constraints) => {
-    
+const sprintAtomAmountList = (typedefs, atoms) => {
+    if (atoms.length > 0) {
+        return atoms.map(x => sprintAtomAmount(typedefs, x)).join(" + ");
+    } else {
+        return "nothing";
+    };
+};
+
+const sprintSignature = (typedefs, duration, inputs, excess) => {
+    let out = `<=(${duration}s)= ${sprintAtomAmountList(typedefs, inputs)}`;
+    if (excess.length > 0) {
+        out += ` excess ${sprintAtomAmountList(typedefs, excess)}`;
+    }
+    return out;
+};
+
+const sprintConstraints = (typedefs, constraints) => {
+    let lines = [];
+    for (const [atom, constraint] of constraints.entries()) {
+        for (const bound of constraint.bounds) {
+            lines.push(`[${lines.length}]: ${
+                sprintAtomAmount(typedefs, { atom })
+            } ${
+                sprintSignature(typedefs, bound.duration, bound.inputs, bound.excess)
+            } {${bound.machineRatio}x ${bound.scheme}}`);
+        }
+    }
+    return lines.join("\n");
+};
+
+const resolveConstraints = (typedefs, types) => {
+    /*
+    return [
+        {
+            name : "a",
+            variants : [
+                // small step semantics
+                process : [
+                    { scheme : "stamp-a", duration : 2, inputs : [{ name : "b", amount : 2 }], excess : [] },
+                ],
+                // big step semantics
+                duration : 2,
+                inputs : [{ name : "b", amount : 2 }],
+                excess : [],
+            ],
+        }
+    ]
+    */
 };
 
 /*
@@ -126,5 +175,19 @@ a = [1/3x b]
 c = [1x d + 1x b, 8/15 d + 5/9x b]
 e = [1/3x b]
 f = [1/5x d]
+
+*/
+
+/*
+
+a = 2x a
+
+---
+
+a = [2x a]
+
+---
+
+a = 2x 'a as 'a
 
 */
