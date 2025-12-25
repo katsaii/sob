@@ -3,25 +3,25 @@
 <script src="./sob/sob-parse.js"></script>
 <script src="./sob/sob-ratio.js"></script>
 <script src="./factory-calculator-parser.js"></script>
+<script src="./factory-calculator-examples.js"></script>
 <script src="./factory-calculator.js"></script>
+<style>
+    #text-body { display : flex; gap : 5px }
+    #text-body textarea { width : 100% }
+</style>
 <a href="./index.html">&lt;&lt; back</a>
 <p>edit code below and then click analyse</p>
-<textarea id="src" cols="80" rows="30" placeholder="hello world">
-throughput 60/s
-
-atom bolt         = `-b-b-b-b-b-b`
-atom circuit      = `-c-c-c-c-c-c`
-atom construction = `-C-C-C-C-C-C`
-atom wire         = `-w-w-w-w-w-w`
-
-stamp-bolt         : `R---------R-`           =(9s)=>  3x bolt
-stamp-circuit      : `P-B-B-B-B-P-` + 3x bolt =(15s)=> circuit
-stamp-construction : 2x bolt                  =(16s)=> 2x construction
-stamp-wire         : `P-B-B-B-B-P-`           =(10s)=> 5x wire
-
-stamp-circuit-ex   : 3x wire + 2x bolt + `R---------R-` + `P-B-B-B-B-P-` =(6s)=> 3x circuit
+<div id="text-body">
+<textarea id="src" cols="80" rows="30" placeholder="input">
 </textarea>
-<br>
+<textarea id="dest" cols="80" rows="30" placeholder="output will appear here" readonly>
+</textarea>
+</div>
+<hr>
+<p>browse examples</p>
+<button onclick="loadExample(0)">maths</button>
+<button onclick="loadExample(1)">cubetory schema</button>
+<hr>
 <button onclick="analyse()">analyse</button>
 <h3>See Also</h3>
 <a href="https://www.techtonica-calculator.com/">https://www.techtonica-calculator.com/</a>

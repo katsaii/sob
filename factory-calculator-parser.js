@@ -1,17 +1,22 @@
 const P = SobParse;
 const PErr = SobParseError;
 
-const space = P.matchRegExp(/^(?:(?:#.*\n)|\s)*/);
-const token = (parser) => P.keepFirst(parser, space);
+const space = P.matchRegExp(/^(?:(?:#.*\n?)|\s)*/);
+const token = (parser) => P.skipFirst(space, parser);
 const keyword = (name) => token(P.matchString(name));
-const eof_ = P.matchRegExp(/^$/).map({
+const eof_ = P.skipFirst(space, P.matchRegExp(/^$/)).map({
     onError : (_, src, idx) => new PErr("expected end of file", src, idx),
 });
 
 const ident = token(P.matchRegExp(/(?:^[A-Za-z_\-][A-Za-z0-9_\-]*)|(?:^`[^`]+`)/)).map({
-    onResult : x => x.replace("`", ""),
+    onResult : x => x.replaceAll("`", ""),
     onError : (_, src, idx) => new PErr("expected identifier", src, idx),
 });
+
+const string = token(P.matchRegExp(/^"[^"]*"/).map({
+    onResult : x => x.slice(1, x.length - 1),
+    onError : (_, src, idx) => new PErr("expected string", src, idx),
+}));
 
 const number = token(P.matchRegExp(/^-?[0-9_]+(\.[0-9_]+)?/).map({
     onResult : x => Number(x.replace("_", "")),
@@ -27,18 +32,20 @@ const throughput = P.seq([
     onResult : x => x[1],
 });
 
-const declAtom = P.seq([
-    keyword("atom"),
+const typeValue = P.either([ident, string]);
+
+const declTypedef = P.seq([
+    keyword("type"),
     ident,
     keyword("="),
-    ident,
+    typeValue,
 ]).map({
-    onResult : x => ({ kind : "atom", value : { name : x[1], value : x[3] } }),
+    onResult : x => ({ kind : "typedef", value : { name : x[1], value : x[3] } }),
 });
 
 const typeRes = P.either([
-    ident.map({ onResult : (name) => ({ name, amount : 1 }) }),
-    P.seq([number, keyword("x"), ident]).map({
+    typeValue.map({ onResult : (name) => ({ name, amount : 1 }) }),
+    P.seq([number, keyword("x"), typeValue]).map({
         onResult : ([amount, , name]) => ({ name, amount }),
     }),
 ]);
@@ -56,35 +63,35 @@ const type = P.seq([
     onResult : ([inputs, , duration, , , outputs]) => ({ inputs, duration, outputs }),
 });
 
-const declRecipe = P.seq([
+const declScheme = P.seq([
     ident,
     keyword(":"),
     type
 ]).map({
-    onResult : ([name, , type_]) => ({ kind : "recipe", value : { name, ...type_ } }),
+    onResult : ([name, , type_]) => ({ kind : "scheme", value : { name, ...type_ } }),
 });
 
-const decl = P.either([declAtom, declRecipe]);
+const decl = P.either([declTypedef, declScheme]);
 
-const program = P.skipFirst(space, P.seq([
+const program = P.seq([
     throughput,
     P.many(decl),
     P.either([eof_, decl]), // the second `decl` makes it possible to report errors
-])).map({
+]).map({
     onResult : x => {
         let throughput = x[0];
-        const atoms = [];
-        const recipes = [];
+        const typedefs = [];
+        const schemes = [];
         for (const decl of x[1]) {
             switch (decl.kind) {
-            case "atom":
-                atoms.push(decl.value);
+            case "typedef":
+                typedefs.push(decl.value);
                 break;
-            case "recipe":
-                recipes.push(decl.value);
+            case "scheme":
+                schemes.push(decl.value);
                 break;
             }
         }
-        return { throughput, atoms, recipes };
+        return { throughput, typedefs, schemes };
     },
 });

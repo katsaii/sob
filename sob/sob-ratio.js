@@ -67,6 +67,6 @@ class SobRational {
         }
     }
 
-    toString() { return `${this.n} // ${this.m}` }
+    toString() { return this.m == 1 ? `${this.n}` : `${this.n}/${this.m}` }
     valueOf() { return this.n / this.m }
 }
