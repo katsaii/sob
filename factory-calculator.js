@@ -45,7 +45,7 @@ const analyse = () => {
         }\n`);
         r.solutions = buildSolutions(r.constraints);
         appendOutputContent(`solutions:\n===========\n\n${
-            sprintSolutions(r.typedefs, r.solutions)
+            sprintSolutions(r.typedefs, r.solutions, 1)
         }\n`);
     } catch (ex) {
         setOutputContent(`oh no! encountered an exception:\n\n${ex}`);
@@ -222,11 +222,12 @@ const buildSolutions = (constraints) => {
     return solutions;
 };
 
-const sprintSolutions = (typedefs, solutions) => {
+const sprintSolutions = (typedefs, solutions, desired) => {
     const chunks = [];
     for (const [atom, solution] of solutions) {
         const atomName = typedefs.fromAtom(atom);
-        let chunk = `to produce 1x ${
+        const atomAmount = 1;
+        let chunk = `to produce ${atomAmount}x ${
             atomName == atom ? atom : `${atomName} (${JSON.stringify(atom)})`
         }:`;
         if (solution.variants.length > 0) {
@@ -265,7 +266,7 @@ const sprintSolutions = (typedefs, solutions) => {
                         }))
                     )
                 } -> [${
-                    bound.machineRatio.clone().mult(inAmount)
+                    Math.max(1, Math.ceil(bound.machineRatio.clone().mult(inAmount)))
                 }x ${bound.scheme}] -> ${
                     sprintAtomAmount(typedefs, {
                         atom : variant.constraint.atom,
@@ -273,7 +274,7 @@ const sprintSolutions = (typedefs, solutions) => {
                     })
                 }`;
             };
-            displayVariant(variant, new SobRational(1));
+            displayVariant(variant, new SobRational(atomAmount));
         });
         chunks.push(chunk);
     }
