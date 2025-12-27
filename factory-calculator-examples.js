@@ -1,15 +1,6 @@
-const examples = [];
-
-examples.push(
-    `
-throughput 1/s
-
-id : "a" =(1s)=> "a"
-    `
-);
-
-examples.push(
-    `
+const examples = {
+    hello : "throughput 1/s",
+    cubetory : `
 throughput 1/s
 
 type bolt         = "-b-b-b-b-b-b"
@@ -26,8 +17,8 @@ stamp-circuit-ex   : 3x wire + 2x bolt + "R---------R-" + "P-B-B-B-B-P-" =(6s)=>
 
 # possible with generics and tuples?
 # pack : a + b + c + d + e + f + g + h =(8s)=> (a, b, c, d, e, f, g, h)
-    `
-);
+    `,
+};
 
 for (const i in examples) {
     examples[i] = examples[i].trim();

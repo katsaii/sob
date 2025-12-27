@@ -14,6 +14,9 @@ class SobRational {
                 this.n = this.n * m.m;
                 this.m = this.m * m.n;
             } else {
+                if (m == 1) {
+                    return;
+                }
                 this.m = this.m * m.valueOf();
             }
         } else {
@@ -29,6 +32,8 @@ class SobRational {
         this.TEMP_.m = m;
         return this.TEMP_;
     }
+
+    clone() { return new SobRational(this) }
 
     addN(otherN, otherM = undefined) { return this.add(SobRational.makeTemp_(otherN, otherM)) }
     add(other) {

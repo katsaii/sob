@@ -1,4 +1,3 @@
-const getVerbose = () => true;
 const getTextContent = () => document.getElementById("src").value;
 const setTextContent = (text) => document.getElementById("src").value = text;
 const setOutputContent = (text) => document.getElementById("dest").value = text;
@@ -28,26 +27,26 @@ const analyse = () => {
         if (textContent == prevTextContent) {
             return;
         }
-        analyseResult = { };
+        const r = { };
+        analyseResult = r;
         prevTextContent = textContent;
-        const p = program.run(textContent);
-        if (getVerbose()) {
-            analyseResult.p = p;
-        }
-        if (p.error) {
-            setOutputContent(SobParseError.prettyPrint(p.error));
+        r.p = program.run(textContent);
+        if (r.p.error) {
+            setOutputContent(SobParseError.prettyPrint(r.p.error));
             return;
         }
         setOutputContent("");
-        const typedefs = buildTypedefs(p.result.typedefs);
-        const constraints = buildConstraints(typedefs, p.result.throughput, p.result.schemes);
-        if (getVerbose()) {
-            analyseResult.typedefs = typedefs;
-            analyseResult.constraints = constraints;
-            appendOutputContent(`constraints:\n===========\n\n${
-                sprintConstraints(typedefs, constraints)
-            }\n\n`);
-        }
+        r.typedefs = buildTypedefs(r.p.result.typedefs);
+        r.constraints = buildConstraints(
+            r.typedefs, r.p.result.throughput, r.p.result.schemes
+        );
+        appendOutputContent(`constraints:\n===========\n\n${
+            sprintConstraints(r.typedefs, r.constraints)
+        }\n`);
+        r.solutions = buildSolutions(r.constraints);
+        appendOutputContent(`solutions:\n===========\n\n${
+            sprintSolutions(r.typedefs, r.solutions)
+        }\n`);
     } catch (ex) {
         setOutputContent(`oh no! encountered an exception:\n\n${ex}`);
         console.error(ex);
@@ -73,10 +72,11 @@ const buildTypedefs = (typedefsAst) => {
 
 const buildConstraints = (typedefs, throughput, schemes) => {
     const constraints = new Map;
+    const makeConstraint = (atom) => ({ atom, bounds : [] });
     for (const scheme of schemes) {
         for (const [i, output] of scheme.outputs.entries()) {
             const atom = typedefs.toAtom(output.name);
-            const { bounds } = constraints.getOrInsert(atom, { atom, bounds : [] });
+            const { bounds } = constraints.getOrInsertComputed(atom, makeConstraint);
             bounds.push({
                 scheme : scheme.name,
                 machineRatio : new SobRational(scheme.duration, output.amount).multN(throughput),
@@ -118,10 +118,10 @@ const sprintSignature = (typedefs, duration, inputs, excess) => {
 
 const sprintConstraints = (typedefs, constraints) => {
     let lines = [];
-    for (const [atom, constraint] of constraints.entries()) {
+    for (const [_, constraint] of constraints) {
         for (const bound of constraint.bounds) {
             lines.push(`[${lines.length}]: ${
-                sprintAtomAmount(typedefs, { atom })
+                sprintAtomAmount(typedefs, { atom : constraint.atom })
             } ${
                 sprintSignature(typedefs, bound.duration, bound.inputs, bound.excess)
             } {${bound.machineRatio}x ${bound.scheme}}`);
@@ -130,64 +130,152 @@ const sprintConstraints = (typedefs, constraints) => {
     return lines.join("\n");
 };
 
-const resolveConstraints = (typedefs, types) => {
-    /*
-    return [
-        {
-            name : "a",
-            variants : [
-                // small step semantics
-                process : [
-                    { scheme : "stamp-a", duration : 2, inputs : [{ name : "b", amount : 2 }], excess : [] },
-                ],
-                // big step semantics
-                duration : 2,
-                inputs : [{ name : "b", amount : 2 }],
-                excess : [],
-            ],
+const forEachPermutations = (items, f) => {
+    const countMap = new Map(items);
+    const countMax = countMap.values().reduce((lhs, rhs) => lhs * rhs, 1);
+    for (let i = 0; i < countMax; i += 1) {
+        f(items.map(([x, n]) => [x, i % n]));
+    }
+}
+
+const buildSolutions = (constraints) => {
+    const cache = new Map;
+    const visited = new Set;
+    const resolveConstraint = (constraint) => {
+        let atom = constraint.atom;
+        let solution = cache.get(atom);
+        if (solution) {
+            return solution;
         }
-    ]
-    */
+        let cacheIsValid = true;
+        const resolveAtom = (atom) => {
+            if (visited.has(atom)) {
+                cacheIsValid = false;
+                return undefined;
+            }
+            let constraint = constraints.get(atom);
+            if (constraint) {
+                return resolveConstraint(constraint);
+            }
+            return undefined;
+        };
+        // build solution variants from bounds
+        visited.add(atom);
+        const variants = constraint.bounds.map(bound => {
+            const makeRational = _ => new SobRational(0, 1);
+            // get inputs
+            const shallowInputs = new Map; 
+            for (const { atom, amount } of bound.inputs) {
+                const fullAmount = shallowInputs.getOrInsertComputed(atom, makeRational);
+                fullAmount.add(amount);
+            }
+            const inputSolutions = shallowInputs.keys().map(atom => {
+                let solution = resolveAtom(atom);
+                return [{ atom, solution }, solution ? solution.variants.length : 1];
+            }).toArray();
+            // produce all permutations of variants
+            const variants = [];
+            forEachPermutations(inputSolutions, inputSolutions => {
+                const deepInputs = new Map;
+                const deepExcess = new Map;
+                for (const { atom, amount } of bound.excess) {
+                    const fullAmount = deepExcess.getOrInsertComputed(atom, makeRational);
+                    fullAmount.add(amount);
+                }
+                const path = inputSolutions.map(([{ atom, solution }, i]) => {
+                    const inputAmount = shallowInputs.get(atom);
+                    if (solution) {
+                        const myVariant = solution.variants[i];
+                        for (const [deepAtom, deepAmount] of myVariant.inputs) {
+                            const fullAmount = deepInputs.getOrInsertComputed(deepAtom, makeRational);
+                            fullAmount.add(new SobRational(deepAmount, 1).mult(inputAmount));
+                        }
+                        for (const [deepAtom, deepAmount] of myVariant.excess) {
+                            const fullAmount = deepExcess.getOrInsertComputed(deepAtom, makeRational);
+                            fullAmount.add(new SobRational(deepAmount, 1).mult(inputAmount));
+                        }
+                    } else {
+                        const fullAmount = deepInputs.getOrInsertComputed(atom, makeRational);
+                        fullAmount.add(inputAmount);
+                    }
+                    //const excessmount = deepExcess.getOrInsertComputed(atom, makeRational);
+                    return { atom, solution, i };
+                });
+                variants.push({ constraint, bound, path, inputs : deepInputs, excess : deepExcess });
+            });
+            return variants;
+        }).flat(1);
+        visited.delete(atom);
+        // cache solution if we can
+        solution = { atom, variants };
+        if (cacheIsValid) {
+            cache.set(atom, solution);
+        }
+        return solution;
+    };
+    const solutions = new Map;
+    for (const [atom, constraint] of constraints) {
+        visited.clear();
+        let solution = resolveConstraint(constraint);
+        solutions.set(atom, solution);
+    }
+    return solutions;
 };
 
-/*
-
----
-
-3x a <= 1x b
-1x c <= 1x d + 3x a
-2x e <= 2x a
-
-3x c <= 3x f + 2x a + 1x b + 1x d
-5x f <= 1x d
-
----
-
-a = 1/3x b
-c = 1x d + 3x a
-e = 1x a
-c = 1x f + 2/3x a + 1/3x b + 1/3x d
-f = 1/5x d
-
----
-
-a = [1/3x b]
-c = [1x d + 1x b, 8/15 d + 5/9x b]
-e = [1/3x b]
-f = [1/5x d]
-
-*/
-
-/*
-
-a = 2x a
-
----
-
-a = [2x a]
-
----
-
-a = 2x 'a as 'a
-
-*/
+const sprintSolutions = (typedefs, solutions) => {
+    const chunks = [];
+    for (const [atom, solution] of solutions) {
+        const atomName = typedefs.fromAtom(atom);
+        let chunk = `to produce 1x ${
+            atomName == atom ? atom : `${atomName} (${JSON.stringify(atom)})`
+        }:`;
+        if (solution.variants.length > 0) {
+            chunk = `there are ${solution.variants.length} way(s) ` + chunk;
+        } else {
+            chunks.push("there are no ways " + chunk);
+            continue;
+        }
+        const sprintVariantAmounts = (amounts) => {
+            return sprintAtomAmountList(typedefs, amounts
+                .entries()
+                .map(([atom, amount]) => ({ atom, amount }))
+                .toArray());
+        };
+        solution.variants.forEach((variant, i) => {
+            const indentIdx = `  ${i + 1}. `;
+            const indent = " ".repeat(indentIdx.length);
+            chunk += `\n\n${indentIdx}(requires ${
+                sprintVariantAmounts(variant.inputs)
+            }`;
+            if (variant.excess.size > 0) {
+                chunk += `\n${indent}   excess ${sprintVariantAmounts(variant.excess)}`;
+            }
+            chunk += ")";
+            const displayVariant = (variant, inAmount) => {
+                for (const { atom, solution, i } of variant.path) {
+                    if (solution) {
+                        displayVariant(solution.variants[i], inAmount);
+                    }
+                }
+                const bound = variant.bound;
+                chunk += `\n${indent}. ${
+                    sprintAtomAmountList(typedefs,
+                        variant.bound.inputs.map(({ atom, amount }) => ({
+                            atom, amount : amount.clone().mult(inAmount),
+                        }))
+                    )
+                } -> [${
+                    bound.machineRatio.clone().mult(inAmount)
+                }x ${bound.scheme}] -> ${
+                    sprintAtomAmount(typedefs, {
+                        atom : variant.constraint.atom,
+                        amount : inAmount,
+                    })
+                }`;
+            };
+            displayVariant(variant, new SobRational(1));
+        });
+        chunks.push(chunk);
+    }
+    return chunks.join("\n\n");
+};
