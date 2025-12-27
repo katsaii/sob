@@ -95,9 +95,12 @@ const buildConstraints = (typedefs, throughput, schemes) => {
     return constraints;
 };
 
+const sprintAmount = (value, amount = 1) => {
+    return amount.valueOf() == 1 ? value : `${amount}x ${value}`;
+}
+
 const sprintAtomAmount = (typedefs, { atom, amount = 1 }) => {
-    let type = typedefs.fromAtomPretty(atom);
-    return amount.valueOf() == 1 ? type : `${amount}x ${type}`;
+    return sprintAmount(typedefs.fromAtomPretty(atom), amount);
 };
 
 const sprintAtomAmountList = (typedefs, atoms) => {
@@ -183,23 +186,22 @@ const buildSolutions = (constraints) => {
                     fullAmount.add(amount);
                 }
                 const path = inputSolutions.map(([{ atom, solution }, i]) => {
-                    const inputAmount = shallowInputs.get(atom);
+                    const amount = shallowInputs.get(atom);
                     if (solution) {
                         const myVariant = solution.variants[i];
                         for (const [deepAtom, deepAmount] of myVariant.inputs) {
                             const fullAmount = deepInputs.getOrInsertComputed(deepAtom, makeRational);
-                            fullAmount.add(new SobRational(deepAmount, 1).mult(inputAmount));
+                            fullAmount.add(new SobRational(deepAmount, 1).mult(amount));
                         }
                         for (const [deepAtom, deepAmount] of myVariant.excess) {
                             const fullAmount = deepExcess.getOrInsertComputed(deepAtom, makeRational);
-                            fullAmount.add(new SobRational(deepAmount, 1).mult(inputAmount));
+                            fullAmount.add(new SobRational(deepAmount, 1).mult(amount));
                         }
                     } else {
                         const fullAmount = deepInputs.getOrInsertComputed(atom, makeRational);
-                        fullAmount.add(inputAmount);
+                        fullAmount.add(amount);
                     }
-                    //const excessmount = deepExcess.getOrInsertComputed(atom, makeRational);
-                    return { atom, solution, i };
+                    return { atom, solution, i, amount };
                 });
                 variants.push({ constraint, bound, path, inputs : deepInputs, excess : deepExcess });
             });
@@ -253,21 +255,20 @@ const sprintSolutions = (typedefs, solutions, desired) => {
             }
             chunk += ")";
             const displayVariant = (variant, inAmount) => {
-                for (const { atom, solution, i } of variant.path) {
+                for (const { atom, solution, i, amount } of variant.path) {
                     if (solution) {
-                        displayVariant(solution.variants[i], inAmount);
+                        displayVariant(solution.variants[i], inAmount.clone().mult(amount));
                     }
                 }
                 const bound = variant.bound;
+                const machineAmouont = Math.max(1, Math.ceil(bound.machineRatio.clone().mult(inAmount)));
                 chunk += `\n${indent}. ${
                     sprintAtomAmountList(typedefs,
                         variant.bound.inputs.map(({ atom, amount }) => ({
                             atom, amount : amount.clone().mult(inAmount),
                         }))
                     )
-                } -> [${
-                    Math.max(1, Math.ceil(bound.machineRatio.clone().mult(inAmount)))
-                }x ${bound.scheme}] -> ${
+                } -> [${sprintAmount(bound.scheme, machineAmouont)}] -> ${
                     sprintAtomAmount(typedefs, {
                         atom : variant.constraint.atom,
                         amount : inAmount,
