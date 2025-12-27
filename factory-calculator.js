@@ -1,3 +1,4 @@
+const getVerbose = () => document.getElementById("check-verbose").checked;
 const getTextContent = () => document.getElementById("src").value;
 const setTextContent = (text) => document.getElementById("src").value = text;
 const setOutputContent = (text) => document.getElementById("dest").value = text;
@@ -20,16 +21,19 @@ const loadExample = (n) => {
 };
 
 let prevTextContent = undefined;
+let prevVerbose = undefined;
 let analyseResult = { };
 const analyse = () => {
     try {
         const textContent = getTextContent();
-        if (textContent == prevTextContent) {
+        const verbose = getVerbose();
+        if (verbose == prevVerbose && textContent == prevTextContent) {
             return;
         }
         const r = { };
         analyseResult = r;
         prevTextContent = textContent;
+        prevVerbose = verbose;
         r.p = program.run(textContent);
         if (r.p.error) {
             setOutputContent(SobParseError.prettyPrint(r.p.error));
@@ -40,9 +44,11 @@ const analyse = () => {
         r.constraints = buildConstraints(
             r.typedefs, r.p.result.throughput, r.p.result.schemes
         );
-        appendOutputContent(`constraints:\n===========\n\n${
-            sprintConstraints(r.typedefs, r.constraints)
-        }\n`);
+        if (verbose) {
+            appendOutputContent(`constraints:\n===========\n\n${
+                sprintConstraints(r.typedefs, r.constraints)
+            }\n`);
+        }
         r.solutions = buildSolutions(r.constraints);
         appendOutputContent(`solutions:\n===========\n\n${
             sprintSolutions(r.typedefs, r.solutions, 1)
