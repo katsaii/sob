@@ -94,6 +94,17 @@ class SobRational {
         }
     }
 
-    toString() { return this.m == 1 ? `${this.n}` : `${this.n}/${this.m}` }
     valueOf() { return this.n / this.m }
+    toString() {
+        if (this.m == 1) {
+            return this.n.toString();
+        }
+        if (this.m != 0) {
+            const r = Math.floor(this.n / this.m);
+            if (r != 0) {
+                return `${r} ${this.n % this.m}/${this.m}`;
+            }
+        }
+        return `${this.n}/${this.m}`;
+    }
 }

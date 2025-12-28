@@ -97,7 +97,11 @@ const declScheme = P.seq([
     onResult : ([name, , type_]) => ({ kind : "scheme", value : { name, ...type_ } }),
 });
 
-const decl = P.either([declTypedef, declScheme]);
+const declDesire = P.seq([keyword("desire"), typeRes]).map({
+    onResult : (([, value]) => ({ kind : "desire", value })),
+})
+
+const decl = P.either([declTypedef, declDesire, declScheme]);
 
 const program = P.seq([
     P.optional(throughput),
@@ -107,6 +111,7 @@ const program = P.seq([
     onResult : ([throughput = { amount : new SobRational(1), unit : "u" }, decls, ]) => {
         const typedefs = [];
         const schemes = [];
+        const desired = [];
         for (const decl of decls) {
             switch (decl.kind) {
             case "typedef":
@@ -115,8 +120,11 @@ const program = P.seq([
             case "scheme":
                 schemes.push(decl.value);
                 break;
+            case "desire":
+                desired.push(decl.value);
+                break;
             }
         }
-        return { throughput, typedefs, schemes };
+        return { throughput, typedefs, schemes, desired };
     },
 });
