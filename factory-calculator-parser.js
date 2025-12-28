@@ -18,16 +18,25 @@ const string = token(P.matchRegExp(/^"[^"]*"/).map({
     onError : (_, src, idx) => new PErr("expected string", src, idx),
 }));
 
-const number = token(P.matchRegExp(/^-?[0-9_]+(\.[0-9_]+)?/).map({
+const numberInt = token(P.matchRegExp(/^-?[0-9][0-9_]*/).map({
     onResult : x => Number(x.replace("_", "")),
     onError : (_, src, idx) => new PErr("expected number", src, idx),
 }));
 
-const numberRational = P.either([
-    P.seq([number, keyword("/"), number]).map({
+const number = P.either([
+    P.seq([numberInt, keyword("/"), numberInt]).map({
         onResult : ([n, , m]) => new SobRational(n, m),
     }),
-    number,
+    P.seq([numberInt, keyword("."), numberInt]).map({
+        onResult : ([n, , dec]) => {
+            if (dec == 0) {
+                return new SobRational(n);
+            }
+            const decLength = dec.toString().length;
+            return new SobRational(n * Math.pow(10, decLength) + dec, decLength);
+        }
+    }),
+    numberInt.map({ onResult : n => new SobRational(n) }),
 ]);
 
 const unit = ident;
@@ -35,7 +44,7 @@ const unit = ident;
 const throughput = P.seq([
     keyword("throughput"),
     number,
-    keyword("/"),
+    keyword("per"),
     unit,
 ]).map({ onResult : ([, amount, , unit]) => ({ amount, unit }) });
 
@@ -52,7 +61,7 @@ const declTypedef = P.seq([
 
 const typeRes = P.either([
     typeValue.map({ onResult : (name) => ({ name, amount : new SobRational(1) }) }),
-    P.seq([numberRational, keyword("x"), typeValue]).map({
+    P.seq([number, keyword("x"), typeValue]).map({
         onResult : ([amount, , name]) => ({ name, amount }),
     }),
 ]);
@@ -65,11 +74,11 @@ const typeResMany = P.either([
 const typeDuration = P.either([
     P.seq([
         keyword("=("),
-        numberRational,
+        number,
         P.optional(unit),
         keyword(")=>"),
     ]).map({ onResult : ([, amount, unit,]) => ({ amount, unit }) }),
-    keyword("==>").map({ onResult : _ => ({ amount : 1, unit : undefined }) }),
+    keyword("==>").map({ onResult : _ => ({ amount : new SobRational(0), unit : undefined }) }),
 ])
 
 const type = P.seq([
@@ -95,7 +104,7 @@ const program = P.seq([
     P.many(decl),
     P.either([eof_, decl]), // the second `decl` makes it possible to report errors
 ]).map({
-    onResult : ([throughput = { amount : 1, unit : "u" }, decls, ]) => {
+    onResult : ([throughput = { amount : new SobRational(1), unit : "u" }, decls, ]) => {
         const typedefs = [];
         const schemes = [];
         for (const decl of decls) {

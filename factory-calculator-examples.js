@@ -3,7 +3,7 @@ const examples = {
 # a schema of the various factories from Cubetory:
 # https://store.steampowered.com/app/3027060/Cubetory/
 
-throughput 1/s
+throughput 1 per s
 
 type bolt         = "-b-b-b-b-b-b"
 type circuit      = "-c-c-c-c-c-c"
@@ -128,7 +128,7 @@ bench-craft-medicinal-herb : 5x slash-leaf + 8x stardust ==> medicinal-herb
 # a schema for the various ways to craft an iron pickaxe in Minecraft:
 # https://minecraft.wiki/w/Iron_Pickaxe
 
-throughput 1/tick
+throughput 1/10 per s
 
 craft-iron-pickaxe : 3x iron + 2x stick ==> iron-pickaxe
 
@@ -137,9 +137,9 @@ craft-iron-from-block   : iron-block ==> 9x iron
 craft-iron-from-nuggets : 9x iron-nugget ==> iron
 
 # smelting
-smelt-iron-ore : 8x iron-ore + 16/3x plank =(1600 tick)=> 8x iron + 5.6x exp
-smelt-raw-iron : 8x raw-iron + 16/3x plank =(1600 tick)=> 8x iron + 5.6x exp
-smelt-iron-pickaxe : 8x iron-pickaxe + 16/3x plank =(1600 tick)=> 8x iron-nugget + 0.8x exp
+smelt-iron-ore : 3x iron-ore + 2x plank =(30s)=> 3x iron + 2.1x exp
+smelt-raw-iron : 3x raw-iron + 2x plank =(30s)=> 3x iron + 2.1x exp
+smelt-iron-pickaxe : 3x iron-pickaxe + 2x plank =(30s)=> 3x iron-nugget + 0.3x exp
 
 # wood
 craft-planks : log ==> 4x plank

@@ -11,10 +11,6 @@ const appendOutputContent = (text) => {
     }
 };
 
-const getMachineRatio = (throughput, craftTime, quantity) => {
-    return new SobRational(throughput * craftTime, quantity);
-};
-
 const loadExample = (n) => {
     setTextContent(examples[n]);
     analyse();
@@ -43,13 +39,13 @@ const convTable = {
     },
 }
 
-const convUnit = ({ amount, unit }, unitTarget) => {
-    if (unit == undefined || unit == unitTarget) {
-        return amount;
+const convUnit = ({ amount, unit } = { }, throughput) => {
+    if (amount == undefined || unit == undefined || unit == throughput.unit) {
+        return amount ?? throughput.amount;
     }
-    let m = convTable[unitTarget]?.[unit];
+    let m = convTable[throughput.unit]?.[unit];
     if (m == undefined) {
-        throw Error(`cannot convert from unit '${unit}' to '${unitTarget}'`);
+        throw Error(`cannot convert from unit '${unit}' to '${throughput.unit}'`);
     }
     return amount.clone().mult(m);
 }
@@ -75,10 +71,9 @@ const analyse = () => {
         }
         setOutputContent("");
         r.typedefs = buildTypedefs(r.p.result.typedefs);
-        r.throughput = r.p.result.throughput.amount;
-        r.unit = r.p.result.throughput.unit;
+        r.throughput = r.p.result.throughput;
         r.constraints = buildConstraints(
-            r.typedefs, r.throughput, r.unit, r.p.result.schemes
+            r.typedefs, r.throughput, r.p.result.schemes
         );
         if (verbose) {
             appendOutputContent(`constraints:\n===========\n\n${
@@ -87,7 +82,7 @@ const analyse = () => {
         }
         r.solutions = buildSolutions(r.constraints);
         appendOutputContent(`solutions:\n===========\n\n${
-            sprintSolutions(r.typedefs, r.solutions, 1)
+            sprintSolutions(r.typedefs, r.solutions, r.throughput)
         }\n`);
     } catch (ex) {
         setOutputContent(`oh no! encountered an exception:\n\n${ex}`);
@@ -112,17 +107,17 @@ const buildTypedefs = (typedefsAst) => {
     };
 };
 
-const buildConstraints = (typedefs, throughput, unit, schemes) => {
+const buildConstraints = (typedefs, throughput, schemes) => {
     const constraints = new Map;
     const makeConstraint = (atom) => ({ atom, bounds : [] });
     for (const scheme of schemes) {
         for (const [i, output] of scheme.outputs.entries()) {
             const atom = typedefs.toAtom(output.name);
             const { bounds } = constraints.getOrInsertComputed(atom, makeConstraint);
-            const duration = convUnit(scheme.duration, unit);
+            const duration = convUnit(scheme.duration, throughput);
             bounds.push({
                 scheme : scheme.name,
-                machineRatio : new SobRational(duration, output.amount).multN(throughput),
+                machineRatio : new SobRational(duration, output.amount).mult(throughput.amount),
                 duration,
                 inputs : scheme.inputs.map(input => ({
                     atom : typedefs.toAtom(input.name),
@@ -267,14 +262,18 @@ const buildSolutions = (constraints) => {
     return solutions;
 };
 
-const sprintSolutions = (typedefs, solutions, desired) => {
+const sprintSolutions = (typedefs, solutions, throughput) => {
     const chunks = [];
     for (const [atom, solution] of solutions) {
         const atomName = typedefs.fromAtom(atom);
-        const atomAmount = 1;
+        const atomAmount = new SobRational(1).mult(throughput.amount);
         let chunk = `to produce ${atomAmount}x ${
             atomName == atom ? atom : `${atomName} (${JSON.stringify(atom)})`
-        }:`;
+        }`;
+        if (throughput.unit != "u") {
+            chunk += ` per ${throughput.unit}`;
+        }
+        chunk += ":";
         if (solution.variants.length > 0) {
             chunk = `there are ${solution.variants.length} way(s) ` + chunk;
         } else {
@@ -294,9 +293,9 @@ const sprintSolutions = (typedefs, solutions, desired) => {
                 sprintVariantAmounts(variant.inputs)
             }`;
             if (variant.excess.size > 0) {
-                chunk += `\n${indent}   excess ${sprintVariantAmounts(variant.excess)}`;
+                chunk += `\n${indent} excess ${sprintVariantAmounts(variant.excess)}`;
             }
-            chunk += ")";
+            chunk += ")\n";
             const displayVariant = (variant, inAmount) => {
                 for (const { atom, solution, i, amount } of variant.path) {
                     if (solution) {
