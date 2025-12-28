@@ -79,14 +79,19 @@ const typeDuration = P.either([
         keyword(")=>"),
     ]).map({ onResult : ([, amount, unit,]) => ({ amount, unit }) }),
     keyword("==>").map({ onResult : _ => ({ amount : new SobRational(0), unit : undefined }) }),
-])
+]);
+
+const typeExcess = P.seq([keyword("excess"), typeResMany]).map({
+    onResult : ([_, x]) => x,
+});
 
 const type = P.seq([
     typeResMany,
     typeDuration,
     typeResMany,
+    P.optional(typeExcess).map({ onResult : x => x ?? [] })
 ]).map({
-    onResult : ([inputs, duration, outputs]) => ({ inputs, duration, outputs }),
+    onResult : ([inputs, duration, outputs, excess]) => ({ inputs, duration, outputs, excess }),
 });
 
 const declScheme = P.seq([

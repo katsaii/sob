@@ -1,21 +1,85 @@
 const examples = {
     cubetory : `
-# a schema of the various factories from Cubetory:
+# a schema of the various factories from the early tiers of Cubetory:
 # https://store.steampowered.com/app/3027060/Cubetory/
 
 throughput 1 per s
 
-type bolt         = "-b-b-b-b-b-b"
-type circuit      = "-c-c-c-c-c-c"
-type construction = "-C-C-C-C-C-C"
-type wire         = "-w-w-w-w-w-w"
+# TIER 1 + 2
 
-stamp-bolt         : "R---------R-"           =(9s)=>  3x bolt
-stamp-circuit      : "P-B-B-B-B-P-" + 3x bolt =(15s)=> circuit
-stamp-construction : 2x bolt                  =(16s)=> 2x construction
-stamp-wire         : "P-B-B-B-B-P-"           =(10s)=> 5x wire
+type nutrient  = "-u-y-y-y-y-u"
+type hydration = "-u-g-g-g-g-u"
 
-stamp-circuit-ex   : 3x wire + 2x bolt + "R---------R-" + "P-B-B-B-B-P-" =(6s)=> 3x circuit
+# TIER 3
+
+type power        = "joules"
+#type fuel         = "-r-r-r-r-r-r"
+type bolt         = "bubububububu"
+type construction = "CuCuCuCuCuCu"
+
+desire 8x construction
+
+stamp-bolt         : 45x power + "-r-u-u-u-u-r" =(9s)=> 3x bolt
+stamp-construction : 80x power + 2x bolt =(16s)=> 2x construction
+
+#burn-fuel : fuel =(4s)=> 100x power
+
+# TIER 4
+
+type fuel-retro     = "fufufufufufu"
+type circuit        = "cucucucucucu"
+type nutrient-retro = "NuNuNuNuNuNu"
+type thunder        = "TuTuTuTuTuTu"
+
+desire 8x nutrient-retro
+desire 8x thunder
+
+stamp-fuel     : 75x power + fuel =(15s)=> fuel-retro
+stamp-circuit  : 75x power + "-p-b-b-b-b-p" + 3x bolt =(15s)=> circuit
+stamp-nutrient : 125x power + 3x nutrient =(25s)=> 4x nutrient-retro excess nutrient
+stamp-thunder  : 160x power + circuit + 2x "-y-u-u-u-u-r" =(32s)=> 4x thunder
+
+#burn-fuel-retro : fuel-retro =(9s)=> 225x power
+
+# TIER 5
+
+type wire       = "wuwuwuwuwuwu"
+type music-base = "-o-r-y-r-y-o:-o-r-y-r-y-o:-o-r-y-r-y-o:-o-r-y-r-y-o"
+type music      = "MuMuMuMuMuMu"
+
+desire 8x music
+
+stamp-wire       : 50x power + "-p-b-b-b-b-p" =(10s)=> 5x wire
+stamp-circuit-ex : 30x power + 3x wire + 2x bolt + "-r-u-u-u-u-r" + "-p-b-b-b-b-p" =(6s)=> 3x circuit
+paint-music-base : 8x "-o-r-y-r-y-o" ==> music-base
+stamp-music      : 80x power + music-base =(16s)=> 8x music
+
+# TIER 6
+
+type fuel-dense      = "2u2u2u2u2u2u"
+type mechanism       = "mumumumumumu"
+type hydration-retro = "LuLuLuLuLuLu"
+type truck           = "VuVuVuVuVuVu"
+
+desire 8x hydration-retro
+desire 8x truck
+
+upgrade-fuel    : 130x power + fuel-retro =(26s)=> fuel-dense
+stamp-hydration : 90x power + 3x hydration =(18s)=> 4x hydration-retro excess nutrient + hydration
+stamp-mechanism : 100x power + 4x wire + circuit =(20s)=> 2x mechanism
+stamp-truck     : 120x power + 2x mechanism + "-g-g-b-b-b-g" =(24s)=> 3x truck
+
+#burn-fuel-dense : fuel-dense =(24s)=> 600x power
+
+# TIER 7
+
+type engine = "eueueueueueu"
+type hammer = "HuHuHuHuHuHu"
+
+desire 8x hammer
+
+stamp-engine : 60x power + circuit + mechanism + bolt =(12s)=> engine excess 1/2x bolt + 1/2x wire + 1/2x circuit + 1/2x mechanism
+stamp-hammer : 150x power + circuit + engine =(30s)=> 3x hammer
     `,
     starbase : `
 # a schema containing a variety of crafting recipes from Super StarBase (v0.2.2):

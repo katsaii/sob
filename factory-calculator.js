@@ -126,10 +126,13 @@ const buildConstraints = (typedefs, throughput, schemes) => {
                     atom : typedefs.toAtom(input.name),
                     amount : new SobRational(input.amount, output.amount),
                 })),
-                excess : scheme.outputs.filter((_, j) => i != j).map(other => ({
-                    atom : typedefs.toAtom(other.name),
-                    amount : new SobRational(other.amount, output.amount),
-                })),
+                excess : scheme.outputs
+                    .filter((_, j) => i != j)
+                    .concat(scheme.excess)
+                    .map(other => ({
+                        atom : typedefs.toAtom(other.name),
+                        amount : new SobRational(other.amount, output.amount),
+                    })),
             });
         }
     }
