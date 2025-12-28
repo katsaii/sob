@@ -20,6 +20,40 @@ const loadExample = (n) => {
     analyse();
 };
 
+const convTable = {
+    "ms" : {
+        "s" : new SobRational(1000),
+        "m" : new SobRational(60000),
+        "h" : new SobRational(3600000),
+    },
+    "s" : {
+        "ms" : new SobRational(1, 1000),
+        "m" : new SobRational(60),
+        "h" : new SobRational(3600),
+    },
+    "m" : {
+        "ms" : new SobRational(1, 60000),
+        "s" : new SobRational(1, 60),
+        "h" : new SobRational(60),
+    },
+    "h" : {
+        "ms" : new SobRational(1, 3600000),
+        "s" : new SobRational(1, 3600),
+        "m" : new SobRational(1, 60),
+    },
+}
+
+const convUnit = ({ amount, unit }, unitTarget) => {
+    if (unit == undefined || unit == unitTarget) {
+        return amount;
+    }
+    let m = convTable[unitTarget]?.[unit];
+    if (m == undefined) {
+        throw Error(`cannot convert from unit '${unit}' to '${unitTarget}'`);
+    }
+    return amount.clone().mult(m);
+}
+
 let prevTextContent = undefined;
 let prevVerbose = undefined;
 let analyseResult = { };
@@ -41,8 +75,10 @@ const analyse = () => {
         }
         setOutputContent("");
         r.typedefs = buildTypedefs(r.p.result.typedefs);
+        r.throughput = r.p.result.throughput.amount;
+        r.unit = r.p.result.throughput.unit;
         r.constraints = buildConstraints(
-            r.typedefs, r.p.result.throughput, r.p.result.schemes
+            r.typedefs, r.throughput, r.unit, r.p.result.schemes
         );
         if (verbose) {
             appendOutputContent(`constraints:\n===========\n\n${
@@ -76,17 +112,18 @@ const buildTypedefs = (typedefsAst) => {
     };
 };
 
-const buildConstraints = (typedefs, throughput, schemes) => {
+const buildConstraints = (typedefs, throughput, unit, schemes) => {
     const constraints = new Map;
     const makeConstraint = (atom) => ({ atom, bounds : [] });
     for (const scheme of schemes) {
         for (const [i, output] of scheme.outputs.entries()) {
             const atom = typedefs.toAtom(output.name);
             const { bounds } = constraints.getOrInsertComputed(atom, makeConstraint);
+            const duration = convUnit(scheme.duration, unit);
             bounds.push({
                 scheme : scheme.name,
-                machineRatio : new SobRational(scheme.duration, output.amount).multN(throughput),
-                duration : scheme.duration,
+                machineRatio : new SobRational(duration, output.amount).multN(throughput),
+                duration,
                 inputs : scheme.inputs.map(input => ({
                     atom : typedefs.toAtom(input.name),
                     amount : new SobRational(input.amount, output.amount),
@@ -136,7 +173,7 @@ const sprintConstraints = (typedefs, constraints) => {
             } {${bound.machineRatio}x ${bound.scheme}}`);
         }
     }
-    return lines.join("\n");
+    return lines.length > 0 ? lines.join("\n") : "nothing";
 };
 
 const forEachPermutations = (items, f) => {
@@ -285,5 +322,5 @@ const sprintSolutions = (typedefs, solutions, desired) => {
         });
         chunks.push(chunk);
     }
-    return chunks.join("\n\n");
+    return chunks.length > 0 ? chunks.join("\n\n") : "nothing";
 };

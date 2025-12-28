@@ -30,14 +30,14 @@ const numberRational = P.either([
     number,
 ]);
 
+const unit = ident;
+
 const throughput = P.seq([
     keyword("throughput"),
     number,
     keyword("/"),
-    keyword("s"),
-]).map({
-    onResult : x => x[1],
-});
+    unit,
+]).map({ onResult : ([, amount, , unit]) => ({ amount, unit }) });
 
 const typeValue = P.either([ident, string]);
 
@@ -47,12 +47,12 @@ const declTypedef = P.seq([
     keyword("="),
     typeValue,
 ]).map({
-    onResult : x => ({ kind : "typedef", value : { name : x[1], value : x[3] } }),
+    onResult : ([, name, , value]) => ({ kind : "typedef", value : { name, value } }),
 });
 
 const typeRes = P.either([
-    typeValue.map({ onResult : (name) => ({ name, amount : 1 }) }),
-    P.seq([number, keyword("x"), typeValue]).map({
+    typeValue.map({ onResult : (name) => ({ name, amount : new SobRational(1) }) }),
+    P.seq([numberRational, keyword("x"), typeValue]).map({
         onResult : ([amount, , name]) => ({ name, amount }),
     }),
 ]);
@@ -66,10 +66,10 @@ const typeDuration = P.either([
     P.seq([
         keyword("=("),
         numberRational,
-        keyword("s"),
+        P.optional(unit),
         keyword(")=>"),
-    ]).map({ onResult : ([, duration, ]) => duration }),
-    keyword("==>").map({ onResult : _ => 0 }),
+    ]).map({ onResult : ([, amount, unit,]) => ({ amount, unit }) }),
+    keyword("==>").map({ onResult : _ => ({ amount : 1, unit : undefined }) }),
 ])
 
 const type = P.seq([
@@ -91,15 +91,14 @@ const declScheme = P.seq([
 const decl = P.either([declTypedef, declScheme]);
 
 const program = P.seq([
-    throughput,
+    P.optional(throughput),
     P.many(decl),
     P.either([eof_, decl]), // the second `decl` makes it possible to report errors
 ]).map({
-    onResult : x => {
-        let throughput = x[0];
+    onResult : ([throughput = { amount : 1, unit : "u" }, decls, ]) => {
         const typedefs = [];
         const schemes = [];
-        for (const decl of x[1]) {
+        for (const decl of decls) {
             switch (decl.kind) {
             case "typedef":
                 typedefs.push(decl.value);

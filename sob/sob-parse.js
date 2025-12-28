@@ -125,6 +125,12 @@ class SobParse {
         ]).map({ onResult : ([xs, x]) => [...xs, x] });
     };
 
+    static optional = (parser) => new SobParse((p) => {
+        if (p.error) { return p }
+        const pNext = parser.fn(p);
+        return pNext.error ? SobParse._makeOk(p, undefined) : pNext;
+    });
+
     static either = (parsers) => new SobParse((p) => {
         if (p.error) { return p }
         const errors = [];

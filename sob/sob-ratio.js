@@ -24,6 +24,12 @@ class SobRational {
             this.m = m.valueOf(); // bottom value
         }
         this.simplify();
+        if (this.n >10000) {
+            console.log({ _ : this, n, m });
+        }
+        if (isNaN(this.n) || isNaN(this.m)) {
+            throw Error(`bug: rational became NaN: (n = ${n}, m = ${m}) => ${this.n}/${this.m}`);
+        }
     }
 
     static TEMP_ = new SobRational;
