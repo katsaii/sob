@@ -11,24 +11,28 @@
 </style>
 <a href="./index.html">&lt;&lt; back</a>
 <p>edit code below and then click analyse</p>
+<input type="checkbox" id="check-verbose" />
+<label for="check-verbose">verbose output</label>
 <div id="text-body">
-<textarea id="src" cols="80" rows="30" placeholder="input">
+<textarea id="src" cols="80" rows="30" placeholder="input" spellcheck="false">
 </textarea>
 <button onclick="analyse()">analyse</button>
-<textarea id="dest" cols="80" rows="30" placeholder="output will appear here" readonly>
+<textarea id="dest" cols="80" rows="30" placeholder="output will appear here" spellcheck="false" readonly>
 </textarea>
 </div>
 <hr>
-<p>browse examples</p>
+<span>examples</span>
 <button onclick="loadExample('cubetory')">cubetory</button>
 <button onclick="loadExample('starbase')">super starbase</button>
 <button onclick="loadExample('minecraft')">minecraft</button>
-<input type="checkbox" id="check-verbose" />
-<label for="check-verbose">verbose output</label>
 <hr>
-<h3>See Also</h3>
-<a href="https://www.techtonica-calculator.com/">https://www.techtonica-calculator.com/</a>
-<br>
-<a href="https://shapez2.wiki.gg">https://shapez2.wiki.gg</a>
-<br>
-<a href="https://store.steampowered.com/app/3027060/Cubetory/">https://store.steampowered.com/app/3027060/Cubetory/</a>
+<p><b>this is a toy project, pet language, and experiment with type systems</b></p>
+<p>the language is used to specify tasks that take inputs and produce outputs.
+these tasks may complete instantly (<code>==&gt;</code>) or take some amount of
+time (<code>=(9s)=&gt;</code>)</p>
+<p>when "analyse" is pressed, the compiler will (try its best to) arrange the
+tasks in a way that a specific output is produced, e.g. 8x donuts per second</p>
+<p>although intended for factory/automation games, any game with recipes can work.
+i also think it could work fine for anything that has something resembling
+small-step computation (if you think about it, that's kinda what crafting is
+anyway? or maybe i'm having a joker moment, who's to say)</p>
