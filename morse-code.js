@@ -8,10 +8,17 @@ const getCharSets = () => {
     let charSets = [];
     const lang = getSelection();
     switch (lang) {
-    case "international-non-latin":
-        charSets.push(sobMorseCharsNonLatin);
     case "international":
         charSets.push(sobMorseCharsInternational);
+        break;
+    case "international-non-latin":
+        charSets.push(sobMorseCharsInternational);
+        charSets.push(sobMorseCharsNonLatin);
+        break;
+    case "international-cyrillic":
+        charSets.push(sobMorseCharsInternational);
+        charSets.push(sobMorseCharsNonLatin);
+        charSets.push(sobMorseCharsCyrillic);
         break;
     case "american":
         charSets.push(sobMorseCharsAmerican);
@@ -32,9 +39,6 @@ const getCharSets = () => {
     if (getOption("punctuation")) {
         charSets.push(sobMorseCharsPunctuation);
     }
-    if (getOption("non-standard")) {
-        charSets.push(sobMorseCharsNonStandard);
-    }
     return charSets;
 }
 
@@ -52,7 +56,8 @@ const writeMorseCodeData = (sb, morse, decoder) => {
         sb.write(ruler);
         sb.writeVoidTag("br");
         sb.writeVoidTag("br");
-        sb.write(morseBin.replaceAll("1", "▓").replaceAll("0", "_"));
+        sb.write(morseBin.replaceAll("1", "-").replaceAll("0", "_"));
+        sb.writeVoidTag("br");
         sb.writeVoidTag("br");
         sb.write(morse.map(morseWord => morseWord.map(morseLetter => {
             const letter = decoder.get(morseLetter) ?? "?";
