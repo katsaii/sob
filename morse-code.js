@@ -9,6 +9,7 @@ const getCharSets = () => {
     const lang = getSelection();
     switch (lang) {
     case "international":
+    case "international-d1p":
         charSets.push(sobMorseCharsInternational);
         break;
     case "international-non-latin":
@@ -28,16 +29,27 @@ const getCharSets = () => {
         break;
     }
     if (getOption("numbers")) {
-        if (lang == "american") {
+        switch (lang) {
+        case "american":
             charSets.push(sobMorseCharsNumbersAmerican);
-        } else if (lang == "continental") {
+            break;
+        case "continental":
             charSets.push(sobMorseCharsNumbersContinental);
-        } else {
+            break;
+        default:
             charSets.push(sobMorseCharsNumbers);
+            break;
         }
     }
     if (getOption("punctuation")) {
-        charSets.push(sobMorseCharsPunctuation);
+        switch (lang) {
+        case "international-d1p":
+            charSets.push(sobMorseCharsPunctuationD1p);
+            break;
+        default:
+            charSets.push(sobMorseCharsPunctuation);
+            break;
+        }
     }
     return charSets;
 }
