@@ -58,7 +58,7 @@ const writeMorseCodeData = (sb, morse, decoder) => {
     var morseBin = sobMorseImplode(morse);
     sb.writeVoidTag("br");
     sb.writeResultRichText("morse code binary signal", morseBin);
-    sb.writeTag(["pre style=\"overflow-x : scroll\"", "code"], (sb) => {
+    sb.writeTag(["pre class=\"box\" style=\"overflow-x : scroll; font-variant-numeric : tabular-nums\"", "code"], (sb) => {
         let rulerN = 0;
         let ruler = "";
         for (let i = morseBin.length - 1; i >= 0; i -= 1) {
@@ -68,7 +68,7 @@ const writeMorseCodeData = (sb, morse, decoder) => {
         sb.write(ruler);
         sb.writeVoidTag("br");
         sb.writeVoidTag("br");
-        sb.write(morseBin.replaceAll("1", "-").replaceAll("0", "_"));
+        sb.write(morseBin.replaceAll("1", "█").replaceAll("0", "_"));
         sb.writeVoidTag("br");
         sb.writeVoidTag("br");
         sb.write(morse.map(morseWord => morseWord.map(morseLetter => {

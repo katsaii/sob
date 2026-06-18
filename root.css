@@ -1,3 +1,30 @@
-* { box-sizing : border-box }
-body { max-width : 100% }
-textarea { width : 100%; resize : none; overflow-y: scroll; }
+* { box-sizing : border-box; text-size-adjust : none }
+
+html {
+    padding          : 0;
+    margin           : 0;
+    scrollbar-gutter : stable;
+}
+
+body {
+    max-width : 100%;
+    width     : 768px;
+    font-size : 12pt;
+    margin    : 0 auto 0 auto;
+    padding   : 1em;
+}
+
+@media (pointer:none), (pointer:coarse) {
+    body { width : 50%; transform : scale(2); transform-origin : 50% 0; }
+}
+
+.box, button, textarea, select, input { border : solid 1px #8f8f9d; }
+
+.box { padding : 2px }
+button { text-align : center }
+
+textarea {
+    width      : 100%;
+    resize     : none;
+    overflow-y : scroll;
+}
