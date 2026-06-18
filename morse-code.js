@@ -55,10 +55,11 @@ const getCharSets = () => {
 }
 
 const writeMorseCodeData = (sb, morse, decoder) => {
-    var morseBin = sobMorseImplode(morse);
+    let morseBin = sobMorseImplode(morse);
+    let charW = getMonospaceCharWidth();
     sb.writeVoidTag("br");
     sb.writeResultRichText("morse code binary signal", morseBin);
-    sb.writeTag(["pre class=\"box\" style=\"overflow-x : scroll; font-variant-numeric : tabular-nums\"", "code"], (sb) => {
+    sb.writeTag(["pre class=\"box\" style=\"overflow-x : scroll\"", "code"], (sb) => {
         let rulerN = 0;
         let ruler = "";
         for (let i = morseBin.length - 1; i >= 0; i -= 1) {
@@ -68,7 +69,7 @@ const writeMorseCodeData = (sb, morse, decoder) => {
         sb.write(ruler);
         sb.writeVoidTag("br");
         sb.writeVoidTag("br");
-        sb.write(morseBin.replaceAll("1", "█").replaceAll("0", "_"));
+        sb.write(morseBin.replaceAll("1", `<span width="${charW}">█</span>`).replaceAll("0", "_"));
         sb.writeVoidTag("br");
         sb.writeVoidTag("br");
         sb.write(morse.map(morseWord => morseWord.map(morseLetter => {
@@ -78,6 +79,11 @@ const writeMorseCodeData = (sb, morse, decoder) => {
             return "-".repeat(lhsCount) + letter + "-".repeat(rhsCount);
         }).join(" ".repeat(SOB_MORSE_SPACE_LETTER.length))).join(" ".repeat(SOB_MORSE_SPACE_WORD.length)))
     });
+}
+
+const getMonospaceCharWidth = () => {
+    let testElem = document.getElementById("mono-test");
+    return testElem.offsetWidth / testElem.innerText.length;
 }
 
 const writeMorseCodeAudio = (sb, morse) => {
