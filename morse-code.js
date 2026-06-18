@@ -56,7 +56,7 @@ const getCharSets = () => {
 
 const writeMorseCodeData = (sb, morse, decoder) => {
     let morseBin = sobMorseImplode(morse);
-    let charW = getMonospaceCharWidth();
+    updateMonospaceCharWidth();
     sb.writeVoidTag("br");
     sb.writeResultRichText("morse code binary signal", morseBin);
     sb.writeTag(["pre class=\"box\" style=\"overflow-x : scroll\"", "code"], (sb) => {
@@ -69,7 +69,7 @@ const writeMorseCodeData = (sb, morse, decoder) => {
         sb.write(ruler);
         sb.writeVoidTag("br");
         sb.writeVoidTag("br");
-        sb.write(morseBin.replaceAll("1", `<span width="${charW}">█</span>`).replaceAll("0", "_"));
+        sb.write(morseBin.replaceAll("1", "<span class=\"mono-char\">█</span>").replaceAll("0", "_"));
         sb.writeVoidTag("br");
         sb.writeVoidTag("br");
         sb.write(morse.map(morseWord => morseWord.map(morseLetter => {
@@ -81,9 +81,17 @@ const writeMorseCodeData = (sb, morse, decoder) => {
     });
 }
 
-const getMonospaceCharWidth = () => {
-    let testElem = document.getElementById("mono-test");
-    return testElem.offsetWidth / testElem.innerText.length;
+let complete = false;
+const updateMonospaceCharWidth = () => {
+    if (complete) {
+        return;
+    }
+    complete = true;
+    const styleElem = document.createElement("style");
+    const testElem = document.getElementById("mono-test");
+    const width = testElem.offsetWidth / testElem.innerText.length;
+    styleElem.innerText = `.mono-char { width : ${width}px; display : inline-block }`;
+    document.head.appendChild(styleElem);
 }
 
 const writeMorseCodeAudio = (sb, morse) => {
