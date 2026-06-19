@@ -2,10 +2,16 @@ const getSrcContent = () => document.getElementById("src-text").value;
 const setSrcContent = (value) => document.getElementById("src-text").value = value;
 const getDestContent = () => document.getElementById("dest-text").value;
 const setDestContent = (value) => document.getElementById("dest-text").value = value;
-const getBases = () => [
-    Number(document.getElementById("src-base").value),
-    Number(document.getElementById("dest-base").value)
-];
+const getBases = () => {
+    const src = Number(document.getElementById("src-base").value);
+    const dest = Number(document.getElementById("dest-base").value);
+    if (src == 0 || dest == 0) {
+        const msg = "base 0 is not allowed, you silly goose";
+        alert(msg)
+        throw msg;
+    }
+    return [src, dest];
+};
 const getAlphabet = () => {
     const alphabetElem = document.getElementById("alpha-text");
     return alphabetElem.value || alphabetElem.getAttribute("placeholder");

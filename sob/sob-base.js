@@ -160,7 +160,10 @@ const sobBaseDigitsStringify = ({ digits, sign }, { valueIntoDigit }) => {
     if (sign < 0) {
         sb += "-";
     }
-    const valueSanitise = (value) => value >= 0 && value < 10 ? value.toString() : `(${value})`;
+    const valueSanitise = (value) => {
+        const valueStr = value.toString();
+        return value >= 0 && value < 10 && valueStr.indexOf(".") < 0 ? valueStr : `(${value})`;
+    };
     if (digits.length == 0) {
         sb += "0";
     } else {
