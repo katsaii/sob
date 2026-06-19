@@ -1,5 +1,7 @@
 * { box-sizing : border-box; text-size-adjust : none }
 
+:root { --content-width : 768px }
+
 html {
     padding          : 0;
     margin           : 0;
@@ -9,7 +11,7 @@ html {
 
 body {
     max-width : 100%;
-    width     : 768px;
+    width     : var(--content-width);
     font-size : 12pt;
     margin    : 0 auto 0 auto;
     padding   : 1em;

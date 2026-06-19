@@ -1,0 +1,32 @@
+<meta charset="utf-8">
+<link rel="stylesheet" href="./root.css">
+<script src="./money-pot.js"></script>
+<a href="./index.html">&lt;&lt; back</a>
+<p>create a new virtual money pot, or import an existing one, then add or remove virtual funds</p>
+<hr>
+<button onclick="importPot()">import</button>
+<input style="display : none" type="file" id="pot-import">
+<button onclick="exportPot()">export</button>
+<span id="n-timestamp"></span>
+<hr>
+<label for="n-total">total funds: </label>
+<input id="n-total" type="numeric" inputmode="none" value="0" readonly />
+<span class="alert" id="n-debt"></span>
+<br>
+<br>
+<label for="n-extra">add/remove funds:</label>
+<input id="n-extra" type="number" value="0" />
+<button onclick="addFunds()">add</button>
+<button onclick="removeFunds()">remove</button>
+<span class="alert" id="n-not-positive"></span>
+<br>
+<label for="n-per-month">funds added automatically per month:</label>
+<input id="n-per-month" type="number" value="0" />
+<span class="alert" id="n-too-much"></span>
+<hr>
+<button onclick="clearPot()">clear</button>
+<h3>Notes</h3>
+<ul>
+  <li><b>this is not a bank</b> it's just a budgeting tool, no information is stored outside of this session</li>
+  <li>when importing a pot, it will automatically detect how many months have passed since you last checked it with this tool; adding funds depending on how many months have passed (if "funds added automatically per month" is not zero)</li>
+</ul>
