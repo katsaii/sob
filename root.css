@@ -43,3 +43,7 @@ textarea {
     height : 0.8em;
     width : 0.8em;
 }
+
+.alert { color : rgb(226, 6, 43) }
+
+a:hover { text-decoration : none }
